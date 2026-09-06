@@ -24,6 +24,8 @@ import {
 } from "lucide-react";
 import { FileUpload } from "@/components/ui/file-upload";
 import { Progress } from "@/components/ui/progress";
+import { FloatingActionDock } from "@/components/ui/floating-action-dock";
+import { motion, AnimatePresence } from "motion/react";
 import type { WorkerResponse, CompressMessageData, ProgressStage } from "../workers/pdf.worker";
 import {
   inspectPdf,
@@ -179,6 +181,7 @@ export default function Home() {
   const [file, setFile] = useState<File | null>(null);
   const [inspection, setInspection] = useState<DocumentInspection | null>(null);
   const [isInspecting, setIsInspecting] = useState(false);
+  const [showAdvanced, setShowAdvanced] = useState(false);
 
   const [status, setStatus] = useState<"idle" | "compressing" | "completed" | "error">("idle");
   const [statusMessage, setStatusMessage] = useState("");
@@ -548,6 +551,25 @@ export default function Home() {
     setTotalPages(null);
     setProcessingStage("idle");
     setEtaSec(null);
+    setShowAdvanced(false);
+  };
+
+  const triggerFileUpload = () => {
+    const el = document.getElementById("file-upload-handle") as HTMLInputElement | null;
+    if (el) {
+      el.click();
+    } else {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+  };
+
+  const scrollToSettings = () => {
+    const el = document.getElementById("compression-settings");
+    if (el) {
+      el.scrollIntoView({ behavior: "smooth", block: "center" });
+    } else {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
   };
 
   return (
@@ -610,377 +632,461 @@ export default function Home() {
         </p>
 
         {/* Main Compression Console */}
-        <div className="mt-5 sm:mt-7 w-full rounded-2xl border border-white/[0.08] bg-[#121215]/90 p-3.5 sm:p-5 backdrop-blur-xl shadow-[0_16px_48px_rgba(0,0,0,0.6),0_0_0_1px_rgba(255,255,255,0.04)]">
-          {status === "completed" && result ? (
-            /* Completed Result Card - Savings as Visual Hero */
-            <div className="animate-pop-in flex flex-col items-center rounded-xl border border-white/[0.08] bg-black/40 p-5 sm:p-7 text-center">
-              {/* Success Confirmation */}
-              <div className="flex items-center gap-1.5 text-emerald-400 text-xs sm:text-sm font-medium">
-                <CheckCircle2 className="h-4 w-4" />
-                <span>Compression complete</span>
-              </div>
-
-              {/* Savings Visual Hero */}
-              {result.compressedSize <= result.originalSize ? (
-                <div className="mt-3.5 flex flex-col items-center">
-                  <div className="text-4xl sm:text-5xl font-bold tracking-tight text-white">
-                    {result.ratio}% smaller
-                  </div>
-                  <div className="mt-2 flex items-center gap-2 font-mono text-xs sm:text-sm text-zinc-400">
-                    <span>{formatBytes(result.originalSize)}</span>
-                    <span className="text-zinc-600">→</span>
-                    <span className="font-semibold text-emerald-400">{formatBytes(result.compressedSize)}</span>
-                  </div>
-                  <div className="mt-1 text-xs font-medium text-emerald-400/90">
-                    You saved {formatBytes(result.originalSize - result.compressedSize)}
-                  </div>
-                </div>
-              ) : (
-                <div className="mt-3.5 flex flex-col items-center">
-                  <div className="text-3xl sm:text-4xl font-bold tracking-tight text-amber-300">
-                    +{Math.round(((result.compressedSize - result.originalSize) / result.originalSize) * 100)}%
-                  </div>
-                  <div className="mt-2 flex items-center gap-2 font-mono text-xs sm:text-sm text-zinc-400">
-                    <span>{formatBytes(result.originalSize)}</span>
-                    <span className="text-zinc-600">→</span>
-                    <span className="font-semibold text-amber-300">{formatBytes(result.compressedSize)}</span>
-                  </div>
-                  <div className="mt-1 text-xs text-amber-400/90">
-                    Document was already optimized
-                  </div>
-                </div>
-              )}
-
-              {/* Stats Comparison Grid */}
-              <div className="mt-4 sm:mt-5 grid w-full grid-cols-3 gap-1 sm:gap-2 rounded-xl border border-white/[0.06] bg-white/[0.02] p-2.5 sm:p-3 text-center">
-                <div className="flex flex-col py-1">
-                  <span className="text-[9px] sm:text-[10px] font-mono uppercase text-zinc-500">Original</span>
-                  <span className="mt-0.5 font-mono text-xs sm:text-sm text-zinc-300">
-                    {formatBytes(result.originalSize)}
-                  </span>
-                </div>
-
-                <div className="flex flex-col border-x border-white/[0.06] py-1">
-                  <span className="text-[9px] sm:text-[10px] font-mono uppercase text-zinc-500">Compressed</span>
-                  <span className="mt-0.5 font-mono text-xs sm:text-sm font-semibold text-emerald-400">
-                    {formatBytes(result.compressedSize)}
-                  </span>
-                </div>
-
-                <div className="flex flex-col py-1">
-                  <span className="text-[9px] sm:text-[10px] font-mono uppercase text-zinc-500">Saved</span>
-                  <span className={`mt-0.5 font-mono text-xs sm:text-sm font-semibold ${
-                    result.compressedSize <= result.originalSize ? "text-emerald-400" : "text-amber-300"
-                  }`}>
-                    {result.compressedSize <= result.originalSize ? `-${result.ratio}%` : "0%"}
-                  </span>
-                </div>
-              </div>
-
-              {/* Explanatory Advisory if Canvas rasterizer increased a vector text document */}
-              {result.compressedSize > result.originalSize && result.engine === "canvas" && (
-                <div className="mt-3.5 flex items-start gap-2 rounded-lg border border-amber-500/20 bg-amber-500/[0.06] p-3 text-left text-xs text-amber-200 w-full">
-                  <AlertTriangle className="h-4 w-4 shrink-0 text-amber-400 mt-0.5" />
-                  <div className="flex-1 leading-relaxed text-[11px] sm:text-xs">
-                    <span className="font-semibold text-amber-300">Why didn't the file get smaller?</span> This document contains clean digital text. Converting pages into images increased the size.
-                    <div className="mt-1">
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setSelectedEngine("wasm");
-                          setIsEngineManuallyChosen(true);
-                          resetAll();
-                        }}
-                        className="font-medium text-white underline hover:text-amber-100 cursor-pointer"
-                      >
-                        Re-compress using Ghostscript WASM &rarr;
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {/* Action Buttons: Primary Download + Secondary Compress Another */}
-              <div className="mt-5 flex w-full flex-col sm:flex-row gap-2.5 sm:gap-3">
-                <button
-                  type="button"
-                  onClick={handleDownload}
-                  className="group relative flex w-full sm:flex-1 items-center justify-center gap-2 rounded-xl bg-white px-4 py-3.5 text-sm font-medium text-black shadow-[0_0_28px_rgba(255,255,255,0.18)] pressable hover:bg-zinc-100 touch-manipulation min-h-[48px] cursor-pointer"
-                >
-                  <Download className="h-4 w-4 transition-transform duration-150 ease-out group-hover:-translate-y-0.5" />
-                  Download Compressed PDF
-                </button>
-
-                <button
-                  type="button"
-                  onClick={resetAll}
-                  className="group flex w-full sm:flex-1 items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/[0.04] px-4 py-3.5 text-sm font-medium text-zinc-300 pressable hover:bg-white/[0.08] hover:text-white hover:border-white/20 touch-manipulation min-h-[48px] cursor-pointer"
-                >
-                  <RotateCcw className="h-4 w-4 text-zinc-400 transition-transform duration-200 ease-out group-hover:-rotate-45" />
-                  Compress Another
-                </button>
-              </div>
-            </div>
-          ) : status === "compressing" ? (
-            /* Transparent Processing State with Refined Industrial Precision */
-            <div className="animate-pop-in flex flex-col items-center justify-center rounded-xl border border-white/[0.08] bg-black/40 py-6 sm:py-8 px-4 sm:px-6 w-full text-center">
-              <div className="relative flex h-11 w-11 sm:h-12 sm:w-12 items-center justify-center">
-                <div className="absolute inset-0 rounded-full border-2 border-white/10 border-t-emerald-400 animate-fast-spin" />
-                <div className="h-2 w-2 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.8)] animate-pulse" />
-              </div>
-
-              <h3 className="mt-3.5 text-base sm:text-lg font-medium text-white">
-                Compressing...
-              </h3>
-
-              {processingStage === "page" && currentPage && totalPages ? (
-                <p className="mt-1 text-xs sm:text-sm font-mono text-zinc-300">
-                  Processing page {currentPage} of {totalPages}
-                </p>
-              ) : (
-                <p className="mt-1 text-xs sm:text-sm text-zinc-400">
-                  {statusMessage || "Optimizing document..."}
-                </p>
-              )}
-
-              {/* Progress Bar with Precision Shimmer */}
-              <div className="mt-3.5 w-full max-w-sm">
-                <Progress value={progress} />
-              </div>
-
-              {/* Percentage & Elapsed */}
-              <div className="mt-2.5 flex items-center justify-between w-full max-w-sm text-[11px] font-mono text-zinc-400 px-0.5">
-                <span className="text-emerald-400 font-semibold tabular-nums">{Math.round(progress)}%</span>
-                <div className="flex items-center gap-2 text-zinc-500">
-                  {etaSec !== null && <span className="text-zinc-400">~{etaSec}s left</span>}
-                  <span>{elapsedSec.toFixed(1)}s</span>
-                </div>
-              </div>
-
-              <p className="mt-3 text-xs text-zinc-500">
-                Please keep this tab open.
-              </p>
-
-              {/* Cancel Escape Hatch */}
-              <button
-                type="button"
-                onClick={handleCancelCompression}
-                className="mt-3.5 flex items-center gap-1.5 text-[11px] font-mono text-zinc-500 hover:text-zinc-300 transition-colors p-1.5 cursor-pointer touch-manipulation active:scale-95"
+        <motion.div
+          layout
+          transition={{ duration: 0.28, ease: [0.23, 1, 0.32, 1] }}
+          className="mt-5 sm:mt-7 w-full rounded-2xl border border-white/[0.08] bg-[#121215]/90 p-3.5 sm:p-5 backdrop-blur-xl shadow-[0_16px_48px_rgba(0,0,0,0.6),0_0_0_1px_rgba(255,255,255,0.04)] overflow-hidden"
+        >
+          <AnimatePresence mode="wait" initial={false}>
+            {status === "completed" && result ? (
+              /* Completed Result Card - Savings as Visual Hero */
+              <motion.div
+                key="state-completed"
+                initial={{ opacity: 0, scale: 0.98, y: 6 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.98, y: -6 }}
+                transition={{ duration: 0.22, ease: [0.23, 1, 0.32, 1] }}
+                className="flex flex-col items-center rounded-xl border border-white/[0.08] bg-black/40 p-5 sm:p-7 text-center"
               >
-                <X className="h-3 w-3" />
-                <span>Cancel</span>
-              </button>
-            </div>
-          ) : (
-            /* Upload / Configuration Flow */
-            <div className="flex flex-col">
-              {/* The File Dropzone */}
-              <FileUpload
-                file={file}
-                onChange={(files) => {
-                  if (files && files.length > 0) {
-                    handleFileSelect(files[0]);
-                  }
-                }}
-                onClear={resetAll}
-              />
-
-              {/* Above the fold reassurance when no file is uploaded */}
-              {!file && (
-                <div className="mt-3.5 flex items-center justify-center gap-1.5 text-xs text-zinc-400">
-                  <Lock className="h-3.5 w-3.5 text-emerald-400" />
-                  <span>Files never leave your device</span>
+                {/* Success Confirmation */}
+                <div className="flex items-center gap-1.5 text-emerald-400 text-xs sm:text-sm font-medium">
+                  <CheckCircle2 className="h-4 w-4" />
+                  <span>Compression complete</span>
                 </div>
-              )}
 
-              {/* Compression controls revealed once file is selected */}
-              {file && (
-                <div className="mt-4 flex flex-col text-left animate-pop-in">
-                  {/* Smart Inspection Banner */}
-                  {isInspecting ? (
-                    <div className="flex items-center gap-2 rounded-xl border border-white/[0.06] bg-white/[0.02] p-2.5 text-xs text-zinc-300 font-mono">
-                      <RefreshCw className="h-3.5 w-3.5 animate-spin" />
-                      <span>Detecting document structure...</span>
+                {/* Savings Visual Hero */}
+                {result.compressedSize <= result.originalSize ? (
+                  <div className="mt-3.5 flex flex-col items-center">
+                    <div className="text-4xl sm:text-5xl font-bold tracking-tight text-white">
+                      {result.ratio}% smaller
                     </div>
-                  ) : inspection ? (
-                    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 rounded-xl border border-white/[0.06] bg-white/[0.02] p-2.5 sm:px-3 sm:py-2 text-xs">
-                      <div className="flex items-center gap-2 text-zinc-300">
-                        {inspection.isScanned ? (
-                          <>
-                            <ImageIcon className="h-3.5 w-3.5 text-emerald-400 shrink-0" />
-                            <span>
-                              Detected scanned pages ({inspection.pageCount} {inspection.pageCount === 1 ? "page" : "pages"}) • Optimized for image reduction
-                            </span>
-                          </>
-                        ) : (
-                          <>
-                            <FileCheck className="h-3.5 w-3.5 text-emerald-400/80 shrink-0" />
-                            <span>
-                              Detected document with text ({inspection.pageCount} {inspection.pageCount === 1 ? "page" : "pages"}) • Optimized for razor-sharp text
-                            </span>
-                          </>
-                        )}
-                      </div>
+                    <div className="mt-2 flex items-center gap-2 font-mono text-xs sm:text-sm text-zinc-400">
+                      <span>{formatBytes(result.originalSize)}</span>
+                      <span className="text-zinc-600">→</span>
+                      <span className="font-semibold text-emerald-400">{formatBytes(result.compressedSize)}</span>
                     </div>
-                  ) : null}
-
-                  {/* Preset Quality Selector */}
-                  <div className="mt-3.5">
-                    <div className="mb-2 flex items-center justify-between">
-                      <div className="flex items-center gap-1.5">
-                        <SlidersHorizontal className="h-3.5 w-3.5 text-zinc-400" />
-                        <span className="text-xs font-medium text-zinc-200">Compression</span>
-                        <span className="text-[11px] font-mono text-emerald-400">
-                          {PRESET_TIERS.find((p) => p.id === selectedPreset)?.name} · {PRESET_TIERS.find((p) => p.id === selectedPreset)?.badge}
-                        </span>
-                      </div>
-                      {!isEngineManuallyChosen && (
-                        <span className="text-[10px] text-zinc-400 hidden sm:inline font-mono">
-                          Automatically optimized for this document
-                        </span>
-                      )}
-                    </div>
-
-                    {/* Presets Grid: 2 columns on mobile, 4 on desktop */}
-                    <div className="grid grid-cols-2 gap-1.5 sm:gap-2 sm:grid-cols-4">
-                      {PRESET_TIERS.map((tier) => {
-                        const isSelected = selectedPreset === tier.id;
-                        return (
-                          <button
-                            key={tier.id}
-                            type="button"
-                            onClick={() => {
-                              setSelectedPreset(tier.id);
-                              setSelectedWasmPreset(tier.wasmId);
-                              setSelectedCanvasPreset(tier.canvasId);
-                            }}
-                            className={`group relative flex flex-col items-start rounded-xl p-2.5 sm:p-3 text-left pressable cursor-pointer min-h-[56px] select-none touch-manipulation justify-between ${
-                              isSelected
-                                ? "bg-white/[0.08] border border-white/20 shadow-[inset_0_1px_0_rgba(255,255,255,0.12),0_2px_8px_rgba(0,0,0,0.3)]"
-                                : "bg-white/[0.02] border border-white/[0.05] hover:bg-white/[0.04] hover:border-white/10"
-                            }`}
-                          >
-                            <div className="flex w-full items-center justify-between">
-                              <span
-                                className={`text-xs font-medium transition-colors duration-140 ${
-                                  isSelected ? "text-white" : "text-zinc-400 group-hover:text-zinc-200"
-                                }`}
-                              >
-                                {tier.name}
-                              </span>
-                              {isSelected && (
-                                <div className="h-1.5 w-1.5 rounded-full bg-emerald-400 shadow-[0_0_6px_rgba(52,211,153,0.7)]" />
-                              )}
-                            </div>
-                            <span className="mt-1 text-[10px] font-mono text-zinc-500 truncate w-full">
-                              {tier.badge}
-                            </span>
-                          </button>
-                        );
-                      })}
+                    <div className="mt-1 text-xs font-medium text-emerald-400/90">
+                      You saved {formatBytes(result.originalSize - result.compressedSize)}
                     </div>
                   </div>
+                ) : (
+                  <div className="mt-3.5 flex flex-col items-center">
+                    <div className="text-3xl sm:text-4xl font-bold tracking-tight text-amber-300">
+                      +{Math.round(((result.compressedSize - result.originalSize) / result.originalSize) * 100)}%
+                    </div>
+                    <div className="mt-2 flex items-center gap-2 font-mono text-xs sm:text-sm text-zinc-400">
+                      <span>{formatBytes(result.originalSize)}</span>
+                      <span className="text-zinc-600">→</span>
+                      <span className="font-semibold text-amber-300">{formatBytes(result.compressedSize)}</span>
+                    </div>
+                    <div className="mt-1 text-xs text-amber-400/90">
+                      Document was already optimized
+                    </div>
+                  </div>
+                )}
 
-                  {/* Advanced Options Collapsible */}
-                  <details className="mt-3.5 group/adv border-t border-white/[0.06] pt-3">
-                    <summary className="flex items-center justify-between text-xs text-zinc-400 cursor-pointer hover:text-zinc-200 select-none list-none">
-                      <span className="flex items-center gap-1.5 font-medium">
-                        <SlidersHorizontal className="h-3.5 w-3.5 text-zinc-500" />
-                        Advanced options
-                      </span>
-                      <ChevronDown className="h-3.5 w-3.5 text-zinc-500 transition-transform duration-200 group-open/adv:rotate-180" />
-                    </summary>
+                {/* Stats Comparison Grid */}
+                <div className="mt-4 sm:mt-5 grid w-full grid-cols-3 gap-1 sm:gap-2 rounded-xl border border-white/[0.06] bg-white/[0.02] p-2.5 sm:p-3 text-center">
+                  <div className="flex flex-col py-1">
+                    <span className="text-[9px] sm:text-[10px] font-mono uppercase text-zinc-500">Original</span>
+                    <span className="mt-0.5 font-mono text-xs sm:text-sm text-zinc-300">
+                      {formatBytes(result.originalSize)}
+                    </span>
+                  </div>
 
-                    <div className="mt-3 space-y-2 text-xs">
-                      <div className="flex flex-col gap-1.5">
-                        <span className="text-zinc-400 text-[11px] font-medium">Compression engine</span>
-                        <div className="grid grid-cols-3 gap-1.5 rounded-lg bg-black/40 p-1 border border-white/[0.06]">
-                          <button
-                            type="button"
-                            onClick={() => {
-                              setIsEngineManuallyChosen(false);
-                              if (inspection) {
-                                setSelectedEngine(inspection.suggestedEngine);
-                              }
-                            }}
-                            className={`px-2 py-1.5 rounded-md text-[11px] font-medium transition-all cursor-pointer text-center ${
-                              !isEngineManuallyChosen
-                                ? "bg-white/10 text-white shadow-sm"
-                                : "text-zinc-400 hover:text-zinc-200"
-                            }`}
-                          >
-                            Automatic
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => {
-                              setIsEngineManuallyChosen(true);
-                              setSelectedEngine("wasm");
-                            }}
-                            className={`px-2 py-1.5 rounded-md text-[11px] font-medium transition-all cursor-pointer text-center ${
-                              isEngineManuallyChosen && selectedEngine === "wasm"
-                                ? "bg-white/10 text-white shadow-sm"
-                                : "text-zinc-400 hover:text-zinc-200"
-                            }`}
-                          >
-                            Ghostscript
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => {
-                              setIsEngineManuallyChosen(true);
-                              setSelectedEngine("canvas");
-                            }}
-                            className={`px-2 py-1.5 rounded-md text-[11px] font-medium transition-all cursor-pointer text-center ${
-                              isEngineManuallyChosen && selectedEngine === "canvas"
-                                ? "bg-white/10 text-white shadow-sm"
-                                : "text-zinc-400 hover:text-zinc-200"
-                            }`}
-                          >
-                            Canvas
-                          </button>
-                        </div>
+                  <div className="flex flex-col border-x border-white/[0.06] py-1">
+                    <span className="text-[9px] sm:text-[10px] font-mono uppercase text-zinc-500">Compressed</span>
+                    <span className="mt-0.5 font-mono text-xs sm:text-sm font-semibold text-emerald-400">
+                      {formatBytes(result.compressedSize)}
+                    </span>
+                  </div>
+
+                  <div className="flex flex-col py-1">
+                    <span className="text-[9px] sm:text-[10px] font-mono uppercase text-zinc-500">Saved</span>
+                    <span className={`mt-0.5 font-mono text-xs sm:text-sm font-semibold ${
+                      result.compressedSize <= result.originalSize ? "text-emerald-400" : "text-amber-300"
+                    }`}>
+                      {result.compressedSize <= result.originalSize ? `-${result.ratio}%` : "0%"}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Explanatory Advisory if Canvas rasterizer increased a vector text document */}
+                {result.compressedSize > result.originalSize && result.engine === "canvas" && (
+                  <div className="mt-3.5 flex items-start gap-2 rounded-lg border border-amber-500/20 bg-amber-500/[0.06] p-3 text-left text-xs text-amber-200 w-full">
+                    <AlertTriangle className="h-4 w-4 shrink-0 text-amber-400 mt-0.5" />
+                    <div className="flex-1 leading-relaxed text-[11px] sm:text-xs">
+                      <span className="font-semibold text-amber-300">Why didn't the file get smaller?</span> This document contains clean digital text. Converting pages into images increased the size.
+                      <div className="mt-1">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setSelectedEngine("wasm");
+                            setIsEngineManuallyChosen(true);
+                            resetAll();
+                          }}
+                          className="font-medium text-white underline hover:text-amber-100 cursor-pointer"
+                        >
+                          Re-compress using Ghostscript WASM &rarr;
+                        </button>
                       </div>
-                      <p className="text-[10px] text-zinc-400 leading-relaxed font-mono">
-                        {!isEngineManuallyChosen
-                          ? `Automatically optimized: ${selectedEngine === "wasm" ? "Ghostscript (Vector & Text)" : "Canvas (Rasterizer)"}`
-                          : selectedEngine === "wasm"
-                          ? "Ghostscript WASM preserves selectable text & vector paths."
-                          : "Canvas Rasterizer compresses pages into optimized images."}
-                      </p>
                     </div>
-                  </details>
+                  </div>
+                )}
 
-                  {/* Error Message */}
-                  {errorMessage && (
-                    <div className="animate-pop-in mt-3 flex items-center gap-2 rounded-lg border border-red-500/20 bg-red-500/[0.08] px-3 py-2 text-xs text-red-400">
-                      <AlertCircle className="h-4 w-4 shrink-0" />
-                      <span>{errorMessage}</span>
-                    </div>
-                  )}
-
-                  {/* Compress Trigger Button */}
+                {/* Action Buttons: Primary Download + Secondary Compress Another */}
+                <div className="mt-5 flex w-full flex-col sm:flex-row gap-2.5 sm:gap-3">
                   <button
                     type="button"
-                    onClick={runCompression}
-                    className="mt-4 sm:mt-5 group relative flex w-full items-center justify-center gap-2 rounded-xl py-3.5 px-5 text-sm font-medium bg-white text-black shadow-[0_0_28px_rgba(255,255,255,0.22)] hover:bg-zinc-100 cursor-pointer pressable touch-manipulation min-h-[48px]"
+                    onClick={handleDownload}
+                    className="group relative flex w-full sm:flex-1 items-center justify-center gap-2 rounded-xl bg-white px-4 py-3.5 text-sm font-medium text-black shadow-[0_0_28px_rgba(255,255,255,0.18)] pressable hover:bg-zinc-100 touch-manipulation min-h-[48px] cursor-pointer"
                   >
-                    <span>Compress PDF</span>
-                    <ArrowRight className="h-4 w-4 transition-transform duration-150 ease-out group-hover:translate-x-1" />
+                    <Download className="h-4 w-4 transition-transform duration-150 ease-out group-hover:-translate-y-0.5" />
+                    Download Compressed PDF
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={resetAll}
+                    className="group flex w-full sm:flex-1 items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/[0.04] px-4 py-3.5 text-sm font-medium text-zinc-300 pressable hover:bg-white/[0.08] hover:text-white hover:border-white/20 touch-manipulation min-h-[48px] cursor-pointer"
+                  >
+                    <RotateCcw className="h-4 w-4 text-zinc-400 transition-transform duration-200 ease-out group-hover:-rotate-45" />
+                    Compress Another
                   </button>
                 </div>
-              )}
-
-              {/* Error Message when no file is chosen yet */}
-              {!file && errorMessage && (
-                <div className="animate-pop-in mt-3 flex items-center gap-2 rounded-lg border border-red-500/20 bg-red-500/[0.08] px-3 py-2 text-xs text-red-400">
-                  <AlertCircle className="h-4 w-4 shrink-0" />
-                  <span>{errorMessage}</span>
+              </motion.div>
+            ) : status === "compressing" ? (
+              /* Transparent Processing State with Refined Industrial Precision */
+              <motion.div
+                key="state-compressing"
+                initial={{ opacity: 0, scale: 0.98, y: 6 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.98, y: -6 }}
+                transition={{ duration: 0.22, ease: [0.23, 1, 0.32, 1] }}
+                className="flex flex-col items-center justify-center rounded-xl border border-white/[0.08] bg-black/40 py-6 sm:py-8 px-4 sm:px-6 w-full text-center"
+              >
+                <div className="relative flex h-11 w-11 sm:h-12 sm:w-12 items-center justify-center">
+                  <div className="absolute inset-0 rounded-full border-2 border-white/10 border-t-emerald-400 animate-fast-spin" />
+                  <div className="h-2 w-2 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.8)] animate-pulse" />
                 </div>
-              )}
-            </div>
-          )}
-        </div>
+
+                <h3 className="mt-3.5 text-base sm:text-lg font-medium text-white">
+                  Compressing...
+                </h3>
+
+                {processingStage === "page" && currentPage && totalPages ? (
+                  <p className="mt-1 text-xs sm:text-sm font-mono text-zinc-300">
+                    Processing page {currentPage} of {totalPages}
+                  </p>
+                ) : (
+                  <p className="mt-1 text-xs sm:text-sm text-zinc-400">
+                    {statusMessage || "Optimizing document..."}
+                  </p>
+                )}
+
+                {/* Progress Bar with Precision Shimmer */}
+                <div className="mt-3.5 w-full max-w-sm">
+                  <Progress value={progress} />
+                </div>
+
+                {/* Percentage & Elapsed */}
+                <div className="mt-2.5 flex items-center justify-between w-full max-w-sm text-[11px] font-mono text-zinc-400 px-0.5">
+                  <span className="text-emerald-400 font-semibold tabular-nums">{Math.round(progress)}%</span>
+                  <div className="flex items-center gap-2 text-zinc-500">
+                    {etaSec !== null && <span className="text-zinc-400">~{etaSec}s left</span>}
+                    <span>{elapsedSec.toFixed(1)}s</span>
+                  </div>
+                </div>
+
+                <p className="mt-3 text-xs text-zinc-500">
+                  Please keep this tab open.
+                </p>
+
+                {/* Cancel Escape Hatch */}
+                <button
+                  type="button"
+                  onClick={handleCancelCompression}
+                  className="mt-3.5 flex items-center gap-1.5 text-[11px] font-mono text-zinc-500 hover:text-zinc-300 transition-colors p-1.5 cursor-pointer touch-manipulation active:scale-95"
+                >
+                  <X className="h-3 w-3" />
+                  <span>Cancel</span>
+                </button>
+              </motion.div>
+            ) : (
+              /* Upload / Configuration Flow */
+              <motion.div
+                key="state-idle"
+                initial={{ opacity: 0, scale: 0.98, y: 6 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.98, y: -6 }}
+                transition={{ duration: 0.22, ease: [0.23, 1, 0.32, 1] }}
+                className="flex flex-col"
+              >
+                {/* The File Dropzone */}
+                <FileUpload
+                  file={file}
+                  onChange={(files) => {
+                    if (files && files.length > 0) {
+                      handleFileSelect(files[0]);
+                    }
+                  }}
+                  onClear={resetAll}
+                />
+
+                {/* Above the fold reassurance when no file is uploaded */}
+                <AnimatePresence>
+                  {!file && (
+                    <motion.div
+                      key="privacy-reassurance"
+                      initial={{ opacity: 0, height: 0, marginTop: 0 }}
+                      animate={{ opacity: 1, height: "auto", marginTop: 14 }}
+                      exit={{ opacity: 0, height: 0, marginTop: 0 }}
+                      transition={{ duration: 0.2, ease: [0.23, 1, 0.32, 1] }}
+                      className="overflow-hidden flex items-center justify-center gap-1.5 text-xs text-zinc-400"
+                    >
+                      <Lock className="h-3.5 w-3.5 text-emerald-400" />
+                      <span>Files never leave your device</span>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+
+                {/* Compression controls revealed smoothly once file is selected */}
+                <AnimatePresence>
+                  {file && (
+                    <motion.div
+                      key="compression-controls"
+                      initial={{ opacity: 0, height: 0, marginTop: 0 }}
+                      animate={{ opacity: 1, height: "auto", marginTop: 16 }}
+                      exit={{ opacity: 0, height: 0, marginTop: 0 }}
+                      transition={{ duration: 0.26, ease: [0.23, 1, 0.32, 1] }}
+                      className="overflow-hidden flex flex-col text-left"
+                    >
+                      {/* Smart Inspection Banner */}
+                      {isInspecting ? (
+                        <div className="flex items-center gap-2 rounded-xl border border-white/[0.06] bg-white/[0.02] p-2.5 text-xs text-zinc-300 font-mono">
+                          <RefreshCw className="h-3.5 w-3.5 animate-spin" />
+                          <span>Detecting document structure...</span>
+                        </div>
+                      ) : inspection ? (
+                        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 rounded-xl border border-white/[0.06] bg-white/[0.02] p-2.5 sm:px-3 sm:py-2 text-xs">
+                          <div className="flex items-center gap-2 text-zinc-300">
+                            {inspection.isScanned ? (
+                              <>
+                                <ImageIcon className="h-3.5 w-3.5 text-emerald-400 shrink-0" />
+                                <span>
+                                  Detected scanned pages ({inspection.pageCount} {inspection.pageCount === 1 ? "page" : "pages"}) • Optimized for image reduction
+                                </span>
+                              </>
+                            ) : (
+                              <>
+                                <FileCheck className="h-3.5 w-3.5 text-emerald-400/80 shrink-0" />
+                                <span>
+                                  Detected document with text ({inspection.pageCount} {inspection.pageCount === 1 ? "page" : "pages"}) • Optimized for razor-sharp text
+                                </span>
+                              </>
+                            )}
+                          </div>
+                        </div>
+                      ) : null}
+
+                      {/* Preset Quality Selector */}
+                      <div id="compression-settings" className="mt-3.5 scroll-mt-20">
+                        <div className="mb-2 flex items-center justify-between">
+                          <div className="flex items-center gap-1.5">
+                            <SlidersHorizontal className="h-3.5 w-3.5 text-zinc-400" />
+                            <span className="text-xs font-medium text-zinc-200">Compression</span>
+                            <span className="text-[11px] font-mono text-emerald-400">
+                              {PRESET_TIERS.find((p) => p.id === selectedPreset)?.name} · {PRESET_TIERS.find((p) => p.id === selectedPreset)?.badge}
+                            </span>
+                          </div>
+                          {!isEngineManuallyChosen && (
+                            <span className="text-[10px] text-zinc-400 hidden sm:inline font-mono">
+                              Automatically optimized for this document
+                            </span>
+                          )}
+                        </div>
+
+                        {/* Presets Grid: 2 columns on mobile, 4 on desktop */}
+                        <div className="grid grid-cols-2 gap-1.5 sm:gap-2 sm:grid-cols-4">
+                          {PRESET_TIERS.map((tier) => {
+                            const isSelected = selectedPreset === tier.id;
+                            return (
+                              <button
+                                key={tier.id}
+                                type="button"
+                                onClick={() => {
+                                  setSelectedPreset(tier.id);
+                                  setSelectedWasmPreset(tier.wasmId);
+                                  setSelectedCanvasPreset(tier.canvasId);
+                                }}
+                                className={`group relative flex flex-col items-start rounded-xl p-2.5 sm:p-3 text-left pressable cursor-pointer min-h-[56px] select-none touch-manipulation justify-between ${
+                                  isSelected
+                                    ? "bg-white/[0.08] border border-white/20 shadow-[inset_0_1px_0_rgba(255,255,255,0.12),0_2px_8px_rgba(0,0,0,0.3)]"
+                                    : "bg-white/[0.02] border border-white/[0.05] hover:bg-white/[0.04] hover:border-white/10"
+                                }`}
+                              >
+                                <div className="flex w-full items-center justify-between">
+                                  <span
+                                    className={`text-xs font-medium transition-colors duration-140 ${
+                                      isSelected ? "text-white" : "text-zinc-400 group-hover:text-zinc-200"
+                                    }`}
+                                  >
+                                    {tier.name}
+                                  </span>
+                                  {isSelected && (
+                                    <div className="h-1.5 w-1.5 rounded-full bg-emerald-400 shadow-[0_0_6px_rgba(52,211,153,0.7)]" />
+                                  )}
+                                </div>
+                                <span className="mt-1 text-[10px] font-mono text-zinc-500 truncate w-full">
+                                  {tier.badge}
+                                </span>
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+
+                      {/* Advanced Options Smooth Collapsible */}
+                      <div className="mt-3.5 border-t border-white/[0.06] pt-3">
+                        <button
+                          type="button"
+                          onClick={() => setShowAdvanced((prev) => !prev)}
+                          aria-expanded={showAdvanced}
+                          className="w-full flex items-center justify-between text-xs text-zinc-400 cursor-pointer hover:text-zinc-200 select-none py-0.5 touch-manipulation focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-white/20 rounded"
+                        >
+                          <span className="flex items-center gap-1.5 font-medium">
+                            <SlidersHorizontal className="h-3.5 w-3.5 text-zinc-500" />
+                            Advanced options
+                          </span>
+                          <motion.div
+                            animate={{ rotate: showAdvanced ? 180 : 0 }}
+                            transition={{ duration: 0.2, ease: [0.23, 1, 0.32, 1] }}
+                          >
+                            <ChevronDown className="h-3.5 w-3.5 text-zinc-500" />
+                          </motion.div>
+                        </button>
+
+                        <AnimatePresence initial={false}>
+                          {showAdvanced && (
+                            <motion.div
+                              key="advanced-options-body"
+                              initial={{ opacity: 0, height: 0, marginTop: 0 }}
+                              animate={{ opacity: 1, height: "auto", marginTop: 12 }}
+                              exit={{ opacity: 0, height: 0, marginTop: 0 }}
+                              transition={{ duration: 0.22, ease: [0.23, 1, 0.32, 1] }}
+                              className="overflow-hidden space-y-2 text-xs"
+                            >
+                              <div className="flex flex-col gap-1.5">
+                                <span className="text-zinc-400 text-[11px] font-medium">Compression engine</span>
+                                <div className="grid grid-cols-3 gap-1.5 rounded-lg bg-black/40 p-1 border border-white/[0.06]">
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      setIsEngineManuallyChosen(false);
+                                      if (inspection) {
+                                        setSelectedEngine(inspection.suggestedEngine);
+                                      }
+                                    }}
+                                    className={`px-2 py-1.5 rounded-md text-[11px] font-medium transition-all cursor-pointer text-center ${
+                                      !isEngineManuallyChosen
+                                        ? "bg-white/10 text-white shadow-sm"
+                                        : "text-zinc-400 hover:text-zinc-200"
+                                    }`}
+                                  >
+                                    Automatic
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      setIsEngineManuallyChosen(true);
+                                      setSelectedEngine("wasm");
+                                    }}
+                                    className={`px-2 py-1.5 rounded-md text-[11px] font-medium transition-all cursor-pointer text-center ${
+                                      isEngineManuallyChosen && selectedEngine === "wasm"
+                                        ? "bg-white/10 text-white shadow-sm"
+                                        : "text-zinc-400 hover:text-zinc-200"
+                                    }`}
+                                  >
+                                    Ghostscript
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      setIsEngineManuallyChosen(true);
+                                      setSelectedEngine("canvas");
+                                    }}
+                                    className={`px-2 py-1.5 rounded-md text-[11px] font-medium transition-all cursor-pointer text-center ${
+                                      isEngineManuallyChosen && selectedEngine === "canvas"
+                                        ? "bg-white/10 text-white shadow-sm"
+                                        : "text-zinc-400 hover:text-zinc-200"
+                                    }`}
+                                  >
+                                    Canvas
+                                  </button>
+                                </div>
+                              </div>
+                              <p className="text-[10px] text-zinc-400 leading-relaxed font-mono">
+                                {!isEngineManuallyChosen
+                                  ? `Automatically optimized: ${selectedEngine === "wasm" ? "Ghostscript (Vector & Text)" : "Canvas (Rasterizer)"}`
+                                  : selectedEngine === "wasm"
+                                  ? "Ghostscript WASM preserves selectable text & vector paths."
+                                  : "Canvas Rasterizer compresses pages into optimized images."}
+                              </p>
+                            </motion.div>
+                          )}
+                        </AnimatePresence>
+                      </div>
+
+                      {/* Error Message */}
+                      <AnimatePresence>
+                        {errorMessage && (
+                          <motion.div
+                            key="file-error"
+                            initial={{ opacity: 0, height: 0, marginTop: 0 }}
+                            animate={{ opacity: 1, height: "auto", marginTop: 12 }}
+                            exit={{ opacity: 0, height: 0, marginTop: 0 }}
+                            transition={{ duration: 0.18, ease: [0.23, 1, 0.32, 1] }}
+                            className="overflow-hidden flex items-center gap-2 rounded-lg border border-red-500/20 bg-red-500/[0.08] px-3 py-2 text-xs text-red-400"
+                          >
+                            <AlertCircle className="h-4 w-4 shrink-0" />
+                            <span>{errorMessage}</span>
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
+
+                      {/* Compress Trigger Button */}
+                      <button
+                        type="button"
+                        onClick={runCompression}
+                        className="mt-4 sm:mt-5 group relative flex w-full items-center justify-center gap-2 rounded-xl py-3.5 px-5 text-sm font-medium bg-white text-black shadow-[0_0_28px_rgba(255,255,255,0.22)] hover:bg-zinc-100 cursor-pointer pressable touch-manipulation min-h-[48px]"
+                      >
+                        <span>Compress PDF</span>
+                        <ArrowRight className="h-4 w-4 transition-transform duration-150 ease-out group-hover:translate-x-1" />
+                      </button>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+
+                {/* Error Message when no file is chosen yet */}
+                <AnimatePresence>
+                  {!file && errorMessage && (
+                    <motion.div
+                      key="idle-error"
+                      initial={{ opacity: 0, height: 0, marginTop: 0 }}
+                      animate={{ opacity: 1, height: "auto", marginTop: 12 }}
+                      exit={{ opacity: 0, height: 0, marginTop: 0 }}
+                      transition={{ duration: 0.18, ease: [0.23, 1, 0.32, 1] }}
+                      className="overflow-hidden flex items-center gap-2 rounded-lg border border-red-500/20 bg-red-500/[0.08] px-3 py-2 text-xs text-red-400"
+                    >
+                      <AlertCircle className="h-4 w-4 shrink-0" />
+                      <span>{errorMessage}</span>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </motion.div>
 
         {/* Feature Cards Grid: 1 column on mobile, 3 on desktop */}
         <div className="mt-10 sm:mt-14 grid w-full grid-cols-1 gap-3 sm:gap-4 text-left sm:grid-cols-3">
@@ -1057,6 +1163,21 @@ export default function Home() {
           </div>
         </div>
       </main>
+
+      {/* Floating Action Dock (Telegram / iOS style tactile dock) */}
+      <FloatingActionDock
+        status={status}
+        file={file}
+        progress={progress}
+        result={result}
+        selectedPresetName={PRESET_TIERS.find((p) => p.id === selectedPreset)?.name}
+        onCompress={runCompression}
+        onDownload={handleDownload}
+        onReset={resetAll}
+        onCancel={handleCancelCompression}
+        onOpenUpload={triggerFileUpload}
+        onScrollToSettings={scrollToSettings}
+      />
     </div>
   );
 }
