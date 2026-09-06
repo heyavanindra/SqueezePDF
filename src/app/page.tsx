@@ -19,6 +19,8 @@ import {
   RefreshCw,
   X,
   Timer,
+  Lock,
+  ChevronDown,
 } from "lucide-react";
 import { FileUpload } from "@/components/ui/file-upload";
 import { Progress } from "@/components/ui/progress";
@@ -51,27 +53,27 @@ const WASM_PRESETS: {
 }[] = [
   {
     id: "screen",
-    name: "Smallest Size",
-    badge: "Max Shrink",
-    description: "Cuts file size the most. Ideal for strict email attachment and upload limits.",
+    name: "Maximum Reduction",
+    badge: "Smallest file",
+    description: "Lowest file size. Best for strict email limits and upload portals.",
   },
   {
     id: "ebook",
     name: "Balanced",
-    badge: "Recommended",
-    description: "Great balance of compact file size and sharp screen reading.",
+    badge: "Recommended ●",
+    description: "Optimal balance of compact file size and sharp screen reading.",
   },
   {
     id: "printer",
-    name: "High Clarity",
-    badge: "Crisp Text",
-    description: "Maintains high detail for presentations, charts, and printing.",
+    name: "High Quality",
+    badge: "Better detail",
+    description: "High resolution for reports, presentations, and typography.",
   },
   {
     id: "prepress",
-    name: "Gentle",
-    badge: "Best Quality",
-    description: "Subtle size reduction while preserving full visual and color fidelity.",
+    name: "Crisp Print",
+    badge: "Maximum detail",
+    description: "Full visual fidelity and high detail for printing and archiving.",
   },
 ];
 
@@ -85,35 +87,76 @@ const CANVAS_PRESETS: {
 }[] = [
   {
     id: "canvas-extreme",
-    name: "Smallest Size",
-    badge: "Max Shrink",
+    name: "Maximum Reduction",
+    badge: "Smallest file",
     quality: 0.5,
     scale: 1.0,
-    description: "Maximum file reduction. Perfect for tight upload limits and forms.",
+    description: "Maximum file reduction for strict upload portals and forms.",
   },
   {
     id: "canvas-balanced",
     name: "Balanced",
-    badge: "Recommended",
+    badge: "Recommended ●",
     quality: 0.65,
     scale: 1.25,
     description: "Clear text and images with significant file size savings.",
   },
   {
     id: "canvas-clarity",
-    name: "High Clarity",
-    badge: "Sharper",
+    name: "High Quality",
+    badge: "Better detail",
     quality: 0.8,
     scale: 1.5,
-    description: "Extra sharpness for receipts, invoices, and fine print.",
+    description: "Extra sharpness for receipts, diagrams, and fine print.",
   },
   {
     id: "canvas-print",
-    name: "Print Ready",
-    badge: "Best Quality",
+    name: "Crisp Print",
+    badge: "Maximum detail",
     quality: 0.9,
     scale: 2.0,
-    description: "High-detail quality for printing or archiving important documents.",
+    description: "High-detail quality for printing or archiving documents.",
+  },
+];
+
+type PresetLevel = "max" | "balanced" | "high" | "print";
+
+interface PresetTier {
+  id: PresetLevel;
+  name: string;
+  badge: string;
+  wasmId: WasmResolution;
+  canvasId: CanvasQualityPreset;
+}
+
+const PRESET_TIERS: PresetTier[] = [
+  {
+    id: "max",
+    name: "Maximum Reduction",
+    badge: "Smallest file",
+    wasmId: "screen",
+    canvasId: "canvas-extreme",
+  },
+  {
+    id: "balanced",
+    name: "Balanced",
+    badge: "Recommended ●",
+    wasmId: "ebook",
+    canvasId: "canvas-balanced",
+  },
+  {
+    id: "high",
+    name: "High Quality",
+    badge: "Better detail",
+    wasmId: "printer",
+    canvasId: "canvas-clarity",
+  },
+  {
+    id: "print",
+    name: "Crisp Print",
+    badge: "Maximum detail",
+    wasmId: "prepress",
+    canvasId: "canvas-print",
   },
 ];
 
@@ -129,6 +172,7 @@ function formatBytes(bytes: number, decimals = 1): string {
 export default function Home() {
   const [selectedEngine, setSelectedEngine] = useState<CompressionEngine>("wasm");
   const [isEngineManuallyChosen, setIsEngineManuallyChosen] = useState(false);
+  const [selectedPreset, setSelectedPreset] = useState<PresetLevel>("balanced");
   const [selectedWasmPreset, setSelectedWasmPreset] = useState<WasmResolution>("ebook");
   const [selectedCanvasPreset, setSelectedCanvasPreset] = useState<CanvasQualityPreset>("canvas-balanced");
   
@@ -233,6 +277,7 @@ export default function Home() {
         } else {
           setSelectedWasmPreset("ebook");
         }
+        setSelectedPreset("balanced");
       }
     } catch (err) {
       console.warn("PDF inspection skipped:", err);
@@ -490,6 +535,10 @@ export default function Home() {
     setFile(null);
     setInspection(null);
     setIsEngineManuallyChosen(false);
+    setSelectedEngine("wasm");
+    setSelectedPreset("balanced");
+    setSelectedWasmPreset("ebook");
+    setSelectedCanvasPreset("canvas-balanced");
     setStatus("idle");
     setResult(null);
     setErrorMessage("");
@@ -510,10 +559,10 @@ export default function Home() {
       <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(to_right,#ffffff05_1px,transparent_1px),linear-gradient(to_bottom,#ffffff05_1px,transparent_1px)] bg-[size:32px_32px] sm:bg-[size:40px_40px] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_15%,#000_70%,transparent_100%)]" />
 
       {/* Header */}
-      <header className="relative z-10 mx-auto flex max-w-6xl items-center justify-between px-3.5 sm:px-6 py-3 sm:py-4.5 border-b border-white/[0.06]">
-        <div className="flex items-center gap-2 sm:gap-3">
-          <div className="flex h-8 w-8 sm:h-9 sm:w-9 items-center justify-center rounded-xl bg-gradient-to-b from-white/15 to-white/5 border border-white/10 shadow-[0_0_16px_rgba(255,255,255,0.06)]">
-            <Layers className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-white" />
+      <header className="relative z-10 mx-auto flex max-w-6xl items-center justify-between px-3.5 sm:px-6 py-3 sm:py-4 border-b border-white/[0.06]">
+        <div className="flex items-center gap-2 sm:gap-2.5">
+          <div className="flex h-7 w-7 sm:h-8 sm:w-8 items-center justify-center rounded-lg bg-gradient-to-b from-white/15 to-white/5 border border-white/10 shadow-[0_0_16px_rgba(255,255,255,0.06)]">
+            <Layers className="h-3.5 w-3.5 text-white" />
           </div>
           <div className="flex items-center gap-1.5 sm:gap-2">
             <span className="font-semibold tracking-tight text-white text-sm sm:text-base">SqueezePDF</span>
@@ -530,7 +579,7 @@ export default function Home() {
               <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-emerald-500" />
             </span>
             <span className="font-mono text-[10px] sm:text-[11px] tracking-wide">
-              100% Private
+              Ready
             </span>
           </div>
 
@@ -538,7 +587,7 @@ export default function Home() {
             href="https://github.com/heyavanindra/realpdfcompressor"
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center gap-1 text-xs text-zinc-400 hover:text-white transition-colors duration-150 p-1.5 touch-manipulation"
+            className="flex items-center gap-1 text-xs text-zinc-400 hover:text-white transition-colors duration-150 p-1 touch-manipulation"
           >
             <span>GitHub</span>
           </a>
@@ -546,283 +595,94 @@ export default function Home() {
       </header>
 
       {/* Hero Content */}
-      <main className="relative z-10 mx-auto flex max-w-3xl flex-col items-center px-3.5 sm:px-6 pt-6 sm:pt-14 pb-12 sm:pb-24 text-center">
-        {/* Release Pill */}
-        <div className="mb-3.5 sm:mb-5 inline-flex max-w-[94vw] items-center gap-1.5 sm:gap-2 rounded-full border border-white/10 bg-white/[0.03] px-3 py-1 text-[10px] sm:text-xs text-zinc-300 backdrop-blur-md transition-colors hover:border-white/20 truncate">
-          <Sparkles className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-indigo-400 shrink-0" />
-          <span className="truncate">Private &amp; In-Browser</span>
-          <span className="text-zinc-600 hidden xs:inline">•</span>
-          <span className="text-zinc-400 hidden xs:inline">Documents never leave your device</span>
-        </div>
-
+      <main className="relative z-10 mx-auto flex max-w-2xl flex-col items-center px-3.5 sm:px-6 pt-5 sm:pt-9 pb-12 sm:pb-20 text-center">
         {/* Title */}
-        <h1 className="max-w-2xl text-2xl sm:text-4xl md:text-5xl font-semibold tracking-tight text-white leading-tight">
-          Shrink your PDF size <br className="hidden xs:inline" />
-          <span className="bg-gradient-to-b from-white via-zinc-200 to-zinc-500 bg-clip-text text-transparent">
-            without losing quality.
-          </span>
+        <h1 className="max-w-xl text-3xl sm:text-4xl md:text-5xl font-semibold tracking-tight text-white leading-tight">
+          Compress PDF files online.
         </h1>
 
-        <p className="mt-2.5 sm:mt-4 max-w-lg text-xs sm:text-sm md:text-base text-zinc-400 leading-relaxed px-1 sm:px-2">
-          Easily reduce file size for email attachments, job applications, and upload limits while keeping text crisp and readable.
+        <p className="mt-2.5 max-w-lg text-sm sm:text-base text-zinc-300">
+          Reduce PDF size quickly — with full control over quality.
+        </p>
+
+        <p className="mt-1.5 text-xs sm:text-sm text-zinc-400">
+          Free · No signup · 100% client-side
         </p>
 
         {/* Main Compression Console */}
-        <div className="mt-6 sm:mt-9 w-full rounded-2xl border border-white/[0.08] bg-[#121215]/90 p-3.5 sm:p-6 md:p-7 backdrop-blur-xl shadow-[0_16px_48px_rgba(0,0,0,0.6),0_0_0_1px_rgba(255,255,255,0.04)]">
-          
-          {/* Document Type Switcher */}
-          <div className="mb-4 sm:mb-5">
-            <div className="mb-2 flex items-center justify-between text-left">
-              <span className="flex items-center gap-1.5 text-xs font-medium text-zinc-300">
-                <FileCheck className="h-3.5 w-3.5 text-zinc-400" />
-                Document Type
-              </span>
-              {isInspecting && (
-                <span className="flex items-center gap-1 text-[10px] font-mono text-indigo-400 animate-pulse">
-                  <RefreshCw className="h-3 w-3 animate-spin" />
-                  Detecting document type...
-                </span>
-              )}
-            </div>
-
-            <div className="grid grid-cols-2 gap-1.5 sm:gap-2 rounded-xl bg-black/40 p-1.5 border border-white/[0.06]">
-              {/* Option A: Digital Document (WASM) */}
-              <button
-                type="button"
-                onClick={() => {
-                  setSelectedEngine("wasm");
-                  setIsEngineManuallyChosen(true);
-                }}
-                className={`group relative flex flex-col items-start rounded-lg p-2 sm:p-2.5 text-left pressable cursor-pointer touch-manipulation min-h-[54px] sm:min-h-[62px] justify-between transition-all duration-150 ${
-                  selectedEngine === "wasm"
-                    ? "bg-white/[0.1] border border-white/20 shadow-[0_0_16px_rgba(255,255,255,0.05)]"
-                    : "bg-transparent border border-transparent hover:bg-white/[0.03]"
-                }`}
-              >
-                <div className="flex w-full items-center justify-between gap-1">
-                  <div className="flex items-center gap-1.5 min-w-0">
-                    <FileCheck className={`h-3.5 w-3.5 shrink-0 ${selectedEngine === "wasm" ? "text-indigo-400" : "text-zinc-500"}`} />
-                    <span className={`text-xs font-medium truncate ${selectedEngine === "wasm" ? "text-white" : "text-zinc-400"}`}>
-                      Digital Document
-                    </span>
-                  </div>
-                  <span className="rounded bg-white/[0.06] px-1 py-0.5 text-[9px] font-mono text-zinc-400 shrink-0">
-                    Best for Text
-                  </span>
-                </div>
-                <span className="mt-1 text-[10px] text-zinc-500 leading-tight line-clamp-2 sm:line-clamp-none">
-                  Resumes, contracts &amp; reports with crisp text
-                </span>
-              </button>
-
-              {/* Option B: Scanned & Photos (Canvas) */}
-              <button
-                type="button"
-                onClick={() => {
-                  setSelectedEngine("canvas");
-                  setIsEngineManuallyChosen(true);
-                }}
-                className={`group relative flex flex-col items-start rounded-lg p-2 sm:p-2.5 text-left pressable cursor-pointer touch-manipulation min-h-[54px] sm:min-h-[62px] justify-between transition-all duration-150 ${
-                  selectedEngine === "canvas"
-                    ? "bg-white/[0.1] border border-white/20 shadow-[0_0_16px_rgba(255,255,255,0.05)]"
-                    : "bg-transparent border border-transparent hover:bg-white/[0.03]"
-                }`}
-              >
-                <div className="flex w-full items-center justify-between gap-1">
-                  <div className="flex items-center gap-1.5 min-w-0">
-                    <ImageIcon className={`h-3.5 w-3.5 shrink-0 ${selectedEngine === "canvas" ? "text-emerald-400" : "text-zinc-500"}`} />
-                    <span className={`text-xs font-medium truncate ${selectedEngine === "canvas" ? "text-white" : "text-zinc-400"}`}>
-                      Scanned &amp; Photos
-                    </span>
-                  </div>
-                  <span className="rounded bg-white/[0.06] px-1 py-0.5 text-[9px] font-mono text-zinc-400 shrink-0">
-                    Max Shrink
-                  </span>
-                </div>
-                <span className="mt-1 text-[10px] text-zinc-500 leading-tight line-clamp-2 sm:line-clamp-none">
-                  Paper scans, receipts &amp; heavy photo pages
-                </span>
-              </button>
-            </div>
-
-            {/* Smart Inspection Banner */}
-            {inspection && (
-              <div className="mt-2.5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 rounded-lg border border-white/[0.06] bg-white/[0.02] p-2.5 sm:px-3 sm:py-2 text-left">
-                {inspection.isIOSLargeFile ? (
-                  <div className="flex items-center gap-2 text-amber-400 text-xs">
-                    <AlertTriangle className="h-4 w-4 shrink-0" />
-                    <span>Large document on mobile. Automatically adjusted for smooth performance.</span>
-                  </div>
-                ) : inspection.isScanned ? (
-                  <div className="flex items-center gap-2 text-emerald-400 text-xs">
-                    <Sparkles className="h-3.5 w-3.5 shrink-0 text-emerald-400" />
-                    <span>
-                      Detected scanned document ({inspection.pageCount} {inspection.pageCount === 1 ? "page" : "pages"}). Switched to Scanned &amp; Photos for best reduction.
-                    </span>
-                  </div>
-                ) : (
-                  <div className="flex items-center gap-2 text-indigo-300 text-xs">
-                    <FileCheck className="h-3.5 w-3.5 shrink-0 text-indigo-400" />
-                    <span>
-                      Detected document with text ({inspection.pageCount} {inspection.pageCount === 1 ? "page" : "pages"}). Optimized for Digital Document to keep text razor-sharp.
-                    </span>
-                  </div>
-                )}
-
-                {/* Quick switch button */}
-                {selectedEngine !== inspection.suggestedEngine && (
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setSelectedEngine(inspection.suggestedEngine);
-                      setIsEngineManuallyChosen(true);
-                    }}
-                    className="shrink-0 text-[11px] font-mono text-indigo-400 hover:text-indigo-300 underline cursor-pointer p-1 touch-manipulation self-end sm:self-auto"
-                  >
-                    Switch to {inspection.suggestedEngine === "wasm" ? "Digital Document" : "Scanned & Photos"}
-                  </button>
-                )}
-              </div>
-            )}
-          </div>
-
-          {/* Preset Quality Selector */}
-          <div className="mb-4 sm:mb-5">
-            <div className="mb-2 flex items-center justify-between text-left">
-              <span className="flex items-center gap-1.5 text-xs font-medium text-zinc-300">
-                <SlidersHorizontal className="h-3.5 w-3.5 text-zinc-400" />
-                Compression Level
-              </span>
-              <span className="text-[10px] sm:text-[11px] font-mono text-zinc-400">
-                {selectedEngine === "wasm"
-                  ? WASM_PRESETS.find((p) => p.id === selectedWasmPreset)?.badge
-                  : CANVAS_PRESETS.find((p) => p.id === selectedCanvasPreset)?.badge}
-              </span>
-            </div>
-
-            {/* Presets Grid: 2 columns on mobile, 4 on desktop */}
-            <div className="grid grid-cols-2 gap-1.5 sm:gap-2 sm:grid-cols-4">
-              {selectedEngine === "wasm"
-                ? WASM_PRESETS.map((preset) => {
-                    const isSelected = selectedWasmPreset === preset.id;
-                    return (
-                      <button
-                        key={preset.id}
-                        type="button"
-                        onClick={() => setSelectedWasmPreset(preset.id)}
-                        className={`group relative flex flex-col items-start rounded-xl p-2.5 text-left pressable cursor-pointer min-h-[50px] sm:min-h-[56px] select-none touch-manipulation justify-between ${
-                          isSelected
-                            ? "bg-white/[0.09] border border-white/25 shadow-[0_0_20px_rgba(255,255,255,0.06)]"
-                            : "bg-white/[0.02] border border-white/[0.05] hover:bg-white/[0.04] hover:border-white/12"
-                        }`}
-                      >
-                        <div className="flex w-full items-center justify-between">
-                          <span
-                            className={`text-xs font-medium transition-colors duration-140 ${
-                              isSelected ? "text-white" : "text-zinc-400 group-hover:text-zinc-200"
-                            }`}
-                          >
-                            {preset.name}
-                          </span>
-                          {isSelected && (
-                            <div className="h-1.5 w-1.5 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.9)] animate-pulse" />
-                          )}
-                        </div>
-                        <span className="mt-1 text-[10px] font-mono text-zinc-500 truncate w-full">
-                          {preset.badge}
-                        </span>
-                      </button>
-                    );
-                  })
-                : CANVAS_PRESETS.map((preset) => {
-                    const isSelected = selectedCanvasPreset === preset.id;
-                    return (
-                      <button
-                        key={preset.id}
-                        type="button"
-                        onClick={() => setSelectedCanvasPreset(preset.id)}
-                        className={`group relative flex flex-col items-start rounded-xl p-2.5 text-left pressable cursor-pointer min-h-[50px] sm:min-h-[56px] select-none touch-manipulation justify-between ${
-                          isSelected
-                            ? "bg-white/[0.09] border border-white/25 shadow-[0_0_20px_rgba(255,255,255,0.06)]"
-                            : "bg-white/[0.02] border border-white/[0.05] hover:bg-white/[0.04] hover:border-white/12"
-                        }`}
-                      >
-                        <div className="flex w-full items-center justify-between">
-                          <span
-                            className={`text-xs font-medium transition-colors duration-140 ${
-                              isSelected ? "text-white" : "text-zinc-400 group-hover:text-zinc-200"
-                            }`}
-                          >
-                            {preset.name}
-                          </span>
-                          {isSelected && (
-                            <div className="h-1.5 w-1.5 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.9)] animate-pulse" />
-                          )}
-                        </div>
-                        <span className="mt-1 text-[10px] font-mono text-zinc-500 truncate w-full">
-                          {preset.badge}
-                        </span>
-                      </button>
-                    );
-                  })}
-            </div>
-          </div>
-
-          {/* Upload / Processing / Completed Stage */}
+        <div className="mt-5 sm:mt-7 w-full rounded-2xl border border-white/[0.08] bg-[#121215]/90 p-3.5 sm:p-5 backdrop-blur-xl shadow-[0_16px_48px_rgba(0,0,0,0.6),0_0_0_1px_rgba(255,255,255,0.04)]">
           {status === "completed" && result ? (
-            /* Completed Result Card */
-            <div className="animate-pop-in flex flex-col items-center rounded-xl border border-white/[0.08] bg-black/40 p-4 sm:p-7">
-              <div className="flex h-10 w-10 sm:h-12 sm:w-12 items-center justify-center rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/25 shadow-[0_0_24px_rgba(16,185,129,0.2)]">
-                <CheckCircle2 className="h-5 w-5 sm:h-6 sm:w-6" />
+            /* Completed Result Card - Savings as Visual Hero */
+            <div className="animate-pop-in flex flex-col items-center rounded-xl border border-white/[0.08] bg-black/40 p-5 sm:p-7 text-center">
+              {/* Success Confirmation */}
+              <div className="flex items-center gap-1.5 text-emerald-400 text-xs sm:text-sm font-medium">
+                <CheckCircle2 className="h-4 w-4" />
+                <span>Compression complete</span>
               </div>
 
-              <div className="mt-2.5 flex items-center gap-2 flex-wrap justify-center">
-                <h3 className="text-sm sm:text-base font-medium text-white">Your PDF is ready!</h3>
-                <span className="rounded-md border border-white/10 bg-white/[0.05] px-2 py-0.5 text-[10px] font-mono text-zinc-300">
-                  {result.engine === "wasm" ? "Digital Document" : "Scanned Document"}
-                </span>
-              </div>
-              <p className="mt-1 font-mono text-xs text-zinc-400 truncate max-w-[220px] sm:max-w-md">{file?.name}</p>
+              {/* Savings Visual Hero */}
+              {result.compressedSize <= result.originalSize ? (
+                <div className="mt-3.5 flex flex-col items-center">
+                  <div className="text-4xl sm:text-5xl font-bold tracking-tight text-white">
+                    {result.ratio}% smaller
+                  </div>
+                  <div className="mt-2 flex items-center gap-2 font-mono text-xs sm:text-sm text-zinc-400">
+                    <span>{formatBytes(result.originalSize)}</span>
+                    <span className="text-zinc-600">→</span>
+                    <span className="font-semibold text-emerald-400">{formatBytes(result.compressedSize)}</span>
+                  </div>
+                  <div className="mt-1 text-xs font-medium text-emerald-400/90">
+                    You saved {formatBytes(result.originalSize - result.compressedSize)}
+                  </div>
+                </div>
+              ) : (
+                <div className="mt-3.5 flex flex-col items-center">
+                  <div className="text-3xl sm:text-4xl font-bold tracking-tight text-amber-300">
+                    +{Math.round(((result.compressedSize - result.originalSize) / result.originalSize) * 100)}%
+                  </div>
+                  <div className="mt-2 flex items-center gap-2 font-mono text-xs sm:text-sm text-zinc-400">
+                    <span>{formatBytes(result.originalSize)}</span>
+                    <span className="text-zinc-600">→</span>
+                    <span className="font-semibold text-amber-300">{formatBytes(result.compressedSize)}</span>
+                  </div>
+                  <div className="mt-1 text-xs text-amber-400/90">
+                    Document was already optimized
+                  </div>
+                </div>
+              )}
 
               {/* Stats Comparison Grid */}
-              <div className="mt-3.5 sm:mt-5 grid w-full grid-cols-3 gap-1 sm:gap-3 rounded-xl border border-white/[0.06] bg-white/[0.02] p-2 sm:p-3 text-center">
-                <div className="animate-pop-in flex flex-col py-1">
-                  <span className="text-[9px] sm:text-[10px] font-mono uppercase text-zinc-500">Original Size</span>
+              <div className="mt-4 sm:mt-5 grid w-full grid-cols-3 gap-1 sm:gap-2 rounded-xl border border-white/[0.06] bg-white/[0.02] p-2.5 sm:p-3 text-center">
+                <div className="flex flex-col py-1">
+                  <span className="text-[9px] sm:text-[10px] font-mono uppercase text-zinc-500">Original</span>
                   <span className="mt-0.5 font-mono text-xs sm:text-sm text-zinc-300">
                     {formatBytes(result.originalSize)}
                   </span>
                 </div>
 
-                <div className="animate-pop-in stagger-1 flex flex-col border-x border-white/[0.06] py-1">
-                  <span className="text-[9px] sm:text-[10px] font-mono uppercase text-zinc-500">New Size</span>
+                <div className="flex flex-col border-x border-white/[0.06] py-1">
+                  <span className="text-[9px] sm:text-[10px] font-mono uppercase text-zinc-500">Compressed</span>
                   <span className="mt-0.5 font-mono text-xs sm:text-sm font-semibold text-emerald-400">
                     {formatBytes(result.compressedSize)}
                   </span>
                 </div>
 
-                {result.compressedSize <= result.originalSize ? (
-                  <div className="animate-pop-in stagger-2 flex flex-col rounded-lg bg-indigo-500/[0.08] border border-indigo-500/20 py-1">
-                    <span className="text-[9px] sm:text-[10px] font-mono uppercase text-indigo-400/90 font-medium">Space Saved</span>
-                    <span className="mt-0.5 font-mono text-xs sm:text-sm font-semibold text-indigo-300">
-                      -{result.ratio}%
-                    </span>
-                  </div>
-                ) : (
-                  <div className="animate-pop-in stagger-2 flex flex-col rounded-lg bg-amber-500/[0.08] border border-amber-500/20 py-1">
-                    <span className="text-[9px] sm:text-[10px] font-mono uppercase text-amber-400/90 font-medium">Size Change</span>
-                    <span className="mt-0.5 font-mono text-xs sm:text-sm font-semibold text-amber-300">
-                      +{Math.round(((result.compressedSize - result.originalSize) / result.originalSize) * 100)}%
-                    </span>
-                  </div>
-                )}
+                <div className="flex flex-col py-1">
+                  <span className="text-[9px] sm:text-[10px] font-mono uppercase text-zinc-500">Saved</span>
+                  <span className={`mt-0.5 font-mono text-xs sm:text-sm font-semibold ${
+                    result.compressedSize <= result.originalSize ? "text-indigo-300" : "text-amber-300"
+                  }`}>
+                    {result.compressedSize <= result.originalSize ? `-${result.ratio}%` : "0%"}
+                  </span>
+                </div>
               </div>
 
               {/* Explanatory Advisory if Canvas rasterizer increased a vector text document */}
               {result.compressedSize > result.originalSize && result.engine === "canvas" && (
-                <div className="mt-3.5 flex items-start gap-2 rounded-lg border border-amber-500/25 bg-amber-500/[0.08] p-3 text-left text-xs text-amber-200">
+                <div className="mt-3.5 flex items-start gap-2 rounded-lg border border-amber-500/25 bg-amber-500/[0.08] p-3 text-left text-xs text-amber-200 w-full">
                   <AlertTriangle className="h-4 w-4 shrink-0 text-amber-400 mt-0.5" />
                   <div className="flex-1 leading-relaxed text-[11px] sm:text-xs">
-                    <span className="font-semibold text-amber-300">Why didn't the file get smaller?</span> This document is already made of clean digital text. Converting pages into images made the file larger.
+                    <span className="font-semibold text-amber-300">Why didn't the file get smaller?</span> This document contains clean digital text. Converting pages into images increased the size.
                     <div className="mt-1">
                       <button
                         type="button"
@@ -833,19 +693,19 @@ export default function Home() {
                         }}
                         className="font-medium text-white underline hover:text-amber-100 cursor-pointer"
                       >
-                        Switch to Digital Document mode &amp; re-compress &rarr;
+                        Re-compress using Ghostscript WASM &rarr;
                       </button>
                     </div>
                   </div>
                 </div>
               )}
 
-              {/* Action Buttons: Stacked on mobile with 48px touch targets */}
-              <div className="mt-4 sm:mt-5 flex w-full flex-col sm:flex-row gap-2 sm:gap-3">
+              {/* Action Buttons: Primary Download + Secondary Compress Another */}
+              <div className="mt-5 flex w-full flex-col sm:flex-row gap-2.5 sm:gap-3">
                 <button
                   type="button"
                   onClick={handleDownload}
-                  className="group relative flex w-full sm:flex-1 items-center justify-center gap-2 rounded-xl bg-white px-4 py-3 sm:py-3.5 text-xs sm:text-sm font-medium text-black shadow-[0_0_28px_rgba(255,255,255,0.18)] pressable hover:bg-zinc-100 touch-manipulation min-h-[48px]"
+                  className="group relative flex w-full sm:flex-1 items-center justify-center gap-2 rounded-xl bg-white px-4 py-3.5 text-sm font-medium text-black shadow-[0_0_28px_rgba(255,255,255,0.18)] pressable hover:bg-zinc-100 touch-manipulation min-h-[48px] cursor-pointer"
                 >
                   <Download className="h-4 w-4 transition-transform duration-150 ease-out group-hover:-translate-y-0.5" />
                   Download Compressed PDF
@@ -854,151 +714,346 @@ export default function Home() {
                 <button
                   type="button"
                   onClick={resetAll}
-                  className="group flex w-full sm:flex-1 items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/[0.04] px-4 py-3 sm:py-3.5 text-xs sm:text-sm font-medium text-zinc-300 pressable hover:bg-white/[0.08] hover:text-white hover:border-white/20 touch-manipulation min-h-[48px]"
+                  className="group flex w-full sm:flex-1 items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/[0.04] px-4 py-3.5 text-sm font-medium text-zinc-300 pressable hover:bg-white/[0.08] hover:text-white hover:border-white/20 touch-manipulation min-h-[48px] cursor-pointer"
                 >
                   <RotateCcw className="h-4 w-4 text-zinc-400 transition-transform duration-200 ease-out group-hover:-rotate-45" />
-                  Compress Another File
+                  Compress Another
                 </button>
               </div>
             </div>
           ) : status === "compressing" ? (
-            /* Transparent Processing State with Real Stage & Page Telemetry */
-            <div className="animate-pop-in flex flex-col items-center justify-center rounded-xl border border-white/[0.08] bg-black/40 py-6 sm:py-8 px-3.5 sm:px-6 w-full">
-              <div className="relative flex h-11 w-11 sm:h-13 sm:w-13 items-center justify-center">
+            /* Transparent Processing State with Page Telemetry */
+            <div className="animate-pop-in flex flex-col items-center justify-center rounded-xl border border-white/[0.08] bg-black/40 py-6 sm:py-8 px-4 sm:px-6 w-full text-center">
+              <div className="relative flex h-11 w-11 sm:h-12 sm:w-12 items-center justify-center">
                 <div className="absolute inset-0 rounded-full border-2 border-indigo-500/20 border-t-indigo-400 animate-fast-spin" />
-                <Zap className="h-5 w-5 sm:h-6 sm:w-6 text-indigo-400 animate-pulse" />
+                <Zap className="h-5 w-5 text-indigo-400 animate-pulse" />
               </div>
 
-              {/* Header with Engine & Real Progress Percentage */}
-              <div className="mt-4 flex items-center justify-between w-full max-w-sm px-0.5">
-                <div className="flex items-center gap-1.5">
-                  <span className="text-xs sm:text-sm font-medium text-zinc-200">
-                    {selectedEngine === "wasm" ? "Digital Document" : "Scanned Document"}
-                  </span>
-                  {processingStage === "page" && currentPage && totalPages && (
-                    <span className="rounded bg-indigo-500/10 border border-indigo-500/20 px-1.5 py-0.2 text-[9px] sm:text-[10px] font-mono text-indigo-300">
-                      p.{currentPage}/{totalPages}
-                    </span>
-                  )}
-                </div>
-                <span className="font-mono text-xs sm:text-sm font-semibold text-emerald-400 tabular-nums">
-                  {Math.round(progress)}%
-                </span>
-              </div>
+              <h3 className="mt-3 text-base sm:text-lg font-medium text-white">
+                Compressing...
+              </h3>
+
+              {processingStage === "page" && currentPage && totalPages ? (
+                <p className="mt-1 text-xs sm:text-sm font-mono text-zinc-300">
+                  Processing page {currentPage} of {totalPages}
+                </p>
+              ) : (
+                <p className="mt-1 text-xs sm:text-sm text-zinc-400">
+                  {statusMessage || "Optimizing document..."}
+                </p>
+              )}
 
               {/* Progress Bar with Active Shimmer */}
-              <div className="mt-2 w-full max-w-sm">
+              <div className="mt-3.5 w-full max-w-sm">
                 <Progress value={progress} />
               </div>
 
-              {/* Live page / status message */}
-              <div className="mt-2.5 flex items-center justify-between w-full max-w-sm text-[10px] sm:text-[11px] font-mono text-zinc-400">
-                <span className="truncate max-w-[200px] sm:max-w-[250px] text-left flex items-center gap-1.5">
-                  <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-ping shrink-0" />
-                  <span className="truncate">{statusMessage || "Optimizing document..."}</span>
-                </span>
-                
-                <div className="flex items-center gap-1.5 shrink-0 text-zinc-500 pl-1">
-                  {etaSec !== null && (
-                    <span className="text-indigo-400/90 font-mono text-[10px]">
-                      ~{etaSec}s left
-                    </span>
-                  )}
+              {/* Percentage & Elapsed */}
+              <div className="mt-2 flex items-center justify-between w-full max-w-sm text-[11px] font-mono text-zinc-400 px-0.5">
+                <span className="text-emerald-400 font-semibold tabular-nums">{Math.round(progress)}%</span>
+                <div className="flex items-center gap-2 text-zinc-500">
+                  {etaSec !== null && <span className="text-indigo-400">~{etaSec}s left</span>}
                   <span>{elapsedSec.toFixed(1)}s</span>
                 </div>
               </div>
 
-              {/* Page count pill if multi-page */}
-              {currentPage && totalPages && totalPages > 1 && (
-                <div className="mt-3.5 flex items-center gap-2 rounded-full border border-white/[0.08] bg-white/[0.03] px-3.5 py-1.5 text-[11px] font-mono text-zinc-300 shadow-sm">
-                  <span className="text-zinc-500">Progress:</span>
-                  <span className="text-white font-medium">Page {currentPage} of {totalPages}</span>
-                  <span className="text-zinc-600">•</span>
-                  <span className="text-emerald-400 font-semibold">{Math.round((currentPage / totalPages) * 100)}% done</span>
-                </div>
-              )}
+              <p className="mt-3 text-xs text-zinc-500">
+                Please keep this tab open.
+              </p>
 
               {/* Cancel Escape Hatch */}
               <button
                 type="button"
                 onClick={handleCancelCompression}
-                className="mt-4 flex items-center gap-1.5 text-[11px] font-mono text-zinc-500 hover:text-zinc-300 transition-colors p-1.5 cursor-pointer touch-manipulation active:scale-95"
+                className="mt-3.5 flex items-center gap-1.5 text-[11px] font-mono text-zinc-500 hover:text-zinc-300 transition-colors p-1.5 cursor-pointer touch-manipulation active:scale-95"
               >
                 <X className="h-3 w-3" />
                 <span>Cancel</span>
               </button>
             </div>
           ) : (
-            /* Upload Dropzone State powered by Aceternity FileUpload */
-            <FileUpload
-              file={file}
-              onChange={(files) => {
-                if (files && files.length > 0) {
-                  handleFileSelect(files[0]);
-                }
-              }}
-              onClear={resetAll}
-            />
-          )}
+            /* Upload / Configuration Flow */
+            <div className="flex flex-col">
+              {/* The File Dropzone */}
+              <FileUpload
+                file={file}
+                onChange={(files) => {
+                  if (files && files.length > 0) {
+                    handleFileSelect(files[0]);
+                  }
+                }}
+                onClear={resetAll}
+              />
 
-          {/* Error Message */}
-          {errorMessage && (
-            <div className="animate-pop-in mt-3 flex items-center gap-2 rounded-lg border border-red-500/20 bg-red-500/[0.08] px-3 py-2 text-xs text-red-400">
-              <AlertCircle className="h-4 w-4 shrink-0" />
-              <span>{errorMessage}</span>
-            </div>
-          )}
+              {/* Above the fold reassurance when no file is uploaded */}
+              {!file && (
+                <div className="mt-3.5 flex items-center justify-center gap-1.5 text-xs text-zinc-400">
+                  <Lock className="h-3.5 w-3.5 text-emerald-400" />
+                  <span>Files never leave your device</span>
+                </div>
+              )}
 
-          {/* Compress Trigger Button */}
-          {status !== "completed" && status !== "compressing" && (
-            <div className="mt-3.5 sm:mt-5 flex justify-end">
-              <button
-                type="button"
-                disabled={!file}
-                onClick={runCompression}
-                className={`group relative flex w-full items-center justify-center gap-2 rounded-xl py-3 sm:py-3.5 px-4 sm:px-5 text-xs sm:text-sm font-medium pressable touch-manipulation min-h-[48px] ${
-                  file
-                    ? "bg-white text-black shadow-[0_0_28px_rgba(255,255,255,0.22)] hover:bg-zinc-100 cursor-pointer"
-                    : "bg-white/[0.04] text-zinc-500 border border-white/[0.05] cursor-not-allowed"
-                }`}
-              >
-                <span>Compress PDF</span>
-                <ArrowRight className="h-4 w-4 transition-transform duration-150 ease-out group-hover:translate-x-1" />
-              </button>
+              {/* Compression controls revealed once file is selected */}
+              {file && (
+                <div className="mt-4 flex flex-col text-left animate-pop-in">
+                  {/* Smart Inspection Banner */}
+                  {isInspecting ? (
+                    <div className="flex items-center gap-2 rounded-xl border border-white/[0.06] bg-white/[0.02] p-2.5 text-xs text-indigo-400 font-mono">
+                      <RefreshCw className="h-3.5 w-3.5 animate-spin" />
+                      <span>Detecting document structure...</span>
+                    </div>
+                  ) : inspection ? (
+                    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 rounded-xl border border-white/[0.06] bg-white/[0.02] p-2.5 sm:px-3 sm:py-2 text-xs">
+                      <div className="flex items-center gap-2 text-zinc-300">
+                        {inspection.isScanned ? (
+                          <>
+                            <ImageIcon className="h-3.5 w-3.5 text-emerald-400 shrink-0" />
+                            <span>
+                              Detected scanned pages ({inspection.pageCount} {inspection.pageCount === 1 ? "page" : "pages"}) • Optimized for image reduction
+                            </span>
+                          </>
+                        ) : (
+                          <>
+                            <FileCheck className="h-3.5 w-3.5 text-indigo-400 shrink-0" />
+                            <span>
+                              Detected document with text ({inspection.pageCount} {inspection.pageCount === 1 ? "page" : "pages"}) • Optimized for razor-sharp text
+                            </span>
+                          </>
+                        )}
+                      </div>
+                    </div>
+                  ) : null}
+
+                  {/* Preset Quality Selector */}
+                  <div className="mt-3.5">
+                    <div className="mb-2 flex items-center justify-between">
+                      <div className="flex items-center gap-1.5">
+                        <SlidersHorizontal className="h-3.5 w-3.5 text-zinc-400" />
+                        <span className="text-xs font-medium text-zinc-200">Compression</span>
+                        <span className="text-[11px] font-mono text-emerald-400">
+                          {PRESET_TIERS.find((p) => p.id === selectedPreset)?.name} · {PRESET_TIERS.find((p) => p.id === selectedPreset)?.badge}
+                        </span>
+                      </div>
+                      {!isEngineManuallyChosen && (
+                        <span className="text-[10px] text-zinc-400 hidden sm:inline font-mono">
+                          Automatically optimized for this document
+                        </span>
+                      )}
+                    </div>
+
+                    {/* Presets Grid: 2 columns on mobile, 4 on desktop */}
+                    <div className="grid grid-cols-2 gap-1.5 sm:gap-2 sm:grid-cols-4">
+                      {PRESET_TIERS.map((tier) => {
+                        const isSelected = selectedPreset === tier.id;
+                        return (
+                          <button
+                            key={tier.id}
+                            type="button"
+                            onClick={() => {
+                              setSelectedPreset(tier.id);
+                              setSelectedWasmPreset(tier.wasmId);
+                              setSelectedCanvasPreset(tier.canvasId);
+                            }}
+                            className={`group relative flex flex-col items-start rounded-xl p-2.5 sm:p-3 text-left pressable cursor-pointer min-h-[56px] select-none touch-manipulation justify-between ${
+                              isSelected
+                                ? "bg-white/[0.09] border border-white/25 shadow-[0_0_20px_rgba(255,255,255,0.06)]"
+                                : "bg-white/[0.02] border border-white/[0.05] hover:bg-white/[0.04] hover:border-white/12"
+                            }`}
+                          >
+                            <div className="flex w-full items-center justify-between">
+                              <span
+                                className={`text-xs font-medium transition-colors duration-140 ${
+                                  isSelected ? "text-white" : "text-zinc-400 group-hover:text-zinc-200"
+                                }`}
+                              >
+                                {tier.name}
+                              </span>
+                              {isSelected && (
+                                <div className="h-1.5 w-1.5 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.9)] animate-pulse" />
+                              )}
+                            </div>
+                            <span className="mt-1 text-[10px] font-mono text-zinc-500 truncate w-full">
+                              {tier.badge}
+                            </span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  {/* Advanced Options Collapsible */}
+                  <details className="mt-3.5 group/adv border-t border-white/[0.06] pt-3">
+                    <summary className="flex items-center justify-between text-xs text-zinc-400 cursor-pointer hover:text-zinc-200 select-none list-none">
+                      <span className="flex items-center gap-1.5 font-medium">
+                        <SlidersHorizontal className="h-3.5 w-3.5 text-zinc-500" />
+                        Advanced options
+                      </span>
+                      <ChevronDown className="h-3.5 w-3.5 text-zinc-500 transition-transform duration-200 group-open/adv:rotate-180" />
+                    </summary>
+
+                    <div className="mt-3 space-y-2 text-xs">
+                      <div className="flex flex-col gap-1.5">
+                        <span className="text-zinc-400 text-[11px] font-medium">Compression engine</span>
+                        <div className="grid grid-cols-3 gap-1.5 rounded-lg bg-black/40 p-1 border border-white/[0.06]">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setIsEngineManuallyChosen(false);
+                              if (inspection) {
+                                setSelectedEngine(inspection.suggestedEngine);
+                              }
+                            }}
+                            className={`px-2 py-1.5 rounded-md text-[11px] font-medium transition-all cursor-pointer text-center ${
+                              !isEngineManuallyChosen
+                                ? "bg-white/10 text-white shadow-sm"
+                                : "text-zinc-400 hover:text-zinc-200"
+                            }`}
+                          >
+                            Automatic
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setIsEngineManuallyChosen(true);
+                              setSelectedEngine("wasm");
+                            }}
+                            className={`px-2 py-1.5 rounded-md text-[11px] font-medium transition-all cursor-pointer text-center ${
+                              isEngineManuallyChosen && selectedEngine === "wasm"
+                                ? "bg-white/10 text-white shadow-sm"
+                                : "text-zinc-400 hover:text-zinc-200"
+                            }`}
+                          >
+                            Ghostscript
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setIsEngineManuallyChosen(true);
+                              setSelectedEngine("canvas");
+                            }}
+                            className={`px-2 py-1.5 rounded-md text-[11px] font-medium transition-all cursor-pointer text-center ${
+                              isEngineManuallyChosen && selectedEngine === "canvas"
+                                ? "bg-white/10 text-white shadow-sm"
+                                : "text-zinc-400 hover:text-zinc-200"
+                            }`}
+                          >
+                            Canvas
+                          </button>
+                        </div>
+                      </div>
+                      <p className="text-[10px] text-zinc-400 leading-relaxed font-mono">
+                        {!isEngineManuallyChosen
+                          ? `Automatically optimized: ${selectedEngine === "wasm" ? "Ghostscript (Vector & Text)" : "Canvas (Rasterizer)"}`
+                          : selectedEngine === "wasm"
+                          ? "Ghostscript WASM preserves selectable text & vector paths."
+                          : "Canvas Rasterizer compresses pages into optimized images."}
+                      </p>
+                    </div>
+                  </details>
+
+                  {/* Error Message */}
+                  {errorMessage && (
+                    <div className="animate-pop-in mt-3 flex items-center gap-2 rounded-lg border border-red-500/20 bg-red-500/[0.08] px-3 py-2 text-xs text-red-400">
+                      <AlertCircle className="h-4 w-4 shrink-0" />
+                      <span>{errorMessage}</span>
+                    </div>
+                  )}
+
+                  {/* Compress Trigger Button */}
+                  <button
+                    type="button"
+                    onClick={runCompression}
+                    className="mt-4 sm:mt-5 group relative flex w-full items-center justify-center gap-2 rounded-xl py-3.5 px-5 text-sm font-medium bg-white text-black shadow-[0_0_28px_rgba(255,255,255,0.22)] hover:bg-zinc-100 cursor-pointer pressable touch-manipulation min-h-[48px]"
+                  >
+                    <span>Compress PDF</span>
+                    <ArrowRight className="h-4 w-4 transition-transform duration-150 ease-out group-hover:translate-x-1" />
+                  </button>
+                </div>
+              )}
+
+              {/* Error Message when no file is chosen yet */}
+              {!file && errorMessage && (
+                <div className="animate-pop-in mt-3 flex items-center gap-2 rounded-lg border border-red-500/20 bg-red-500/[0.08] px-3 py-2 text-xs text-red-400">
+                  <AlertCircle className="h-4 w-4 shrink-0" />
+                  <span>{errorMessage}</span>
+                </div>
+              )}
             </div>
           )}
         </div>
 
         {/* Feature Cards Grid: 1 column on mobile, 3 on desktop */}
-        <div className="mt-8 sm:mt-12 grid w-full grid-cols-1 gap-2.5 sm:gap-4 text-left sm:grid-cols-3">
-          <div className="group rounded-xl border border-white/[0.06] bg-white/[0.02] p-3.5 sm:p-5 transition-all duration-200 hover:border-white/15 hover:bg-white/[0.035] hover:-translate-y-0.5">
-            <div className="flex h-7 w-7 sm:h-8 sm:w-8 items-center justify-center rounded-lg border border-white/10 bg-white/[0.04] text-zinc-300 transition-transform duration-200 group-hover:scale-110 group-hover:text-white">
-              <ShieldCheck className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+        <div className="mt-10 sm:mt-14 grid w-full grid-cols-1 gap-3 sm:gap-4 text-left sm:grid-cols-3">
+          <div className="group rounded-xl border border-white/[0.06] bg-white/[0.02] p-4 sm:p-5 transition-all duration-200 hover:border-white/15 hover:bg-white/[0.035]">
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg border border-white/10 bg-white/[0.04] text-zinc-300">
+              <ShieldCheck className="h-4 w-4 text-emerald-400" />
             </div>
-            <h4 className="mt-2.5 text-xs sm:text-sm font-medium text-white">100% Private &amp; Secure</h4>
-            <p className="mt-1 text-[11px] sm:text-xs text-zinc-400 leading-relaxed">
-              Your files never leave your computer. All processing happens privately inside your browser with zero server uploads.
+            <h4 className="mt-3 text-xs sm:text-sm font-medium text-white">Private by design</h4>
+            <p className="mt-1.5 text-[11px] sm:text-xs text-zinc-400 leading-relaxed">
+              Your PDFs are processed locally in your browser. They never need to be uploaded.
             </p>
           </div>
 
-          <div className="group rounded-xl border border-white/[0.06] bg-white/[0.02] p-3.5 sm:p-5 transition-all duration-200 hover:border-white/15 hover:bg-white/[0.035] hover:-translate-y-0.5">
-            <div className="flex h-7 w-7 sm:h-8 sm:w-8 items-center justify-center rounded-lg border border-white/10 bg-white/[0.04] text-zinc-300 transition-transform duration-200 group-hover:scale-110 group-hover:text-white">
-              <Sparkles className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+          <div className="group rounded-xl border border-white/[0.06] bg-white/[0.02] p-4 sm:p-5 transition-all duration-200 hover:border-white/15 hover:bg-white/[0.035]">
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg border border-white/10 bg-white/[0.04] text-zinc-300">
+              <Sparkles className="h-4 w-4 text-indigo-400" />
             </div>
-            <h4 className="mt-2.5 text-xs sm:text-sm font-medium text-white">Crisp, Readable Text</h4>
-            <p className="mt-1 text-[11px] sm:text-xs text-zinc-400 leading-relaxed">
-              Resumes, reports, and contracts stay sharp and easy to read, preserving selectable fonts and clean layout.
+            <h4 className="mt-3 text-xs sm:text-sm font-medium text-white">Smart compression</h4>
+            <p className="mt-1.5 text-[11px] sm:text-xs text-zinc-400 leading-relaxed">
+              Automatically chooses the appropriate compression strategy for your document.
             </p>
           </div>
 
-          <div className="group rounded-xl border border-white/[0.06] bg-white/[0.02] p-3.5 sm:p-5 transition-all duration-200 hover:border-white/15 hover:bg-white/[0.035] hover:-translate-y-0.5">
-            <div className="flex h-7 w-7 sm:h-8 sm:w-8 items-center justify-center rounded-lg border border-white/10 bg-white/[0.04] text-zinc-300 transition-transform duration-200 group-hover:scale-110 group-hover:text-white">
-              <Zap className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+          <div className="group rounded-xl border border-white/[0.06] bg-white/[0.02] p-4 sm:p-5 transition-all duration-200 hover:border-white/15 hover:bg-white/[0.035]">
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg border border-white/10 bg-white/[0.04] text-zinc-300">
+              <SlidersHorizontal className="h-4 w-4 text-zinc-300" />
             </div>
-            <h4 className="mt-2.5 text-xs sm:text-sm font-medium text-white">Fits Any Upload Limit</h4>
-            <p className="mt-1 text-[11px] sm:text-xs text-zinc-400 leading-relaxed">
-              Easily meet strict size requirements for job applications, university portals, and email attachments in seconds.
+            <h4 className="mt-3 text-xs sm:text-sm font-medium text-white">Quality control</h4>
+            <p className="mt-1.5 text-[11px] sm:text-xs text-zinc-400 leading-relaxed">
+              Choose between maximum reduction, balanced compression, high quality, and print-ready output.
             </p>
+          </div>
+        </div>
+
+        {/* Technical Architecture Section */}
+        <div className="mt-12 sm:mt-16 w-full text-left">
+          <div className="flex items-center gap-2 mb-3 sm:mb-4">
+            <Cpu className="h-4 w-4 text-zinc-400" />
+            <h3 className="text-xs sm:text-sm font-medium tracking-wide text-zinc-300">
+              Technical Architecture
+            </h3>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div className="rounded-xl border border-white/[0.06] bg-white/[0.015] p-3.5 sm:p-4">
+              <div className="flex items-center gap-2 text-xs font-medium text-white">
+                <span className="h-1.5 w-1.5 rounded-full bg-indigo-400" />
+                Ghostscript WASM
+              </div>
+              <p className="mt-1.5 text-[11px] sm:text-xs text-zinc-400 leading-relaxed">
+                Preserves selectable text, vectors, and document structure where possible.
+              </p>
+            </div>
+
+            <div className="rounded-xl border border-white/[0.06] bg-white/[0.015] p-3.5 sm:p-4">
+              <div className="flex items-center gap-2 text-xs font-medium text-white">
+                <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
+                Canvas Rasterizer
+              </div>
+              <p className="mt-1.5 text-[11px] sm:text-xs text-zinc-400 leading-relaxed">
+                Useful for scanned or image-heavy PDFs.
+              </p>
+            </div>
+
+            <div className="rounded-xl border border-white/[0.06] bg-white/[0.015] p-3.5 sm:p-4">
+              <div className="flex items-center gap-2 text-xs font-medium text-white">
+                <span className="h-1.5 w-1.5 rounded-full bg-zinc-400" />
+                Automatic Optimization
+              </div>
+              <p className="mt-1.5 text-[11px] sm:text-xs text-zinc-400 leading-relaxed">
+                SqueezePDF selects the appropriate compression strategy based on the document.
+              </p>
+            </div>
           </div>
         </div>
       </main>

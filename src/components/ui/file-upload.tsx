@@ -77,13 +77,21 @@ export const FileUpload = ({
   return (
     <div className="w-full select-none touch-manipulation" {...getRootProps()}>
       <motion.div
+        role="button"
+        tabIndex={0}
         onClick={handleClick}
+        onKeyDown={(e) => {
+          if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault();
+            handleClick();
+          }
+        }}
         whileHover="animate"
         className={cn(
-          "group/file relative block w-full cursor-pointer overflow-hidden rounded-2xl border-2 border-dashed p-4 sm:p-9 transition-all duration-200",
+          "group/file relative block w-full cursor-pointer overflow-hidden rounded-2xl border-2 border-dashed p-6 sm:p-9 transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500/50 focus-visible:border-indigo-400",
           isDragActive
-            ? "border-indigo-400 bg-indigo-500/[0.08] shadow-[0_0_32px_rgba(99,102,241,0.2)]"
-            : "border-white/10 bg-white/[0.01] hover:border-white/20 hover:bg-white/[0.02]"
+            ? "border-indigo-400 bg-indigo-500/[0.08] shadow-[0_0_32px_rgba(99,102,241,0.25)]"
+            : "border-white/12 bg-white/[0.015] hover:border-white/25 hover:bg-white/[0.03]"
         )}
       >
         <input
@@ -97,15 +105,36 @@ export const FileUpload = ({
         <div className="absolute inset-0 pointer-events-none overflow-hidden [mask-image:radial-gradient(ellipse_at_center,white,transparent)] opacity-35">
           <GridPattern />
         </div>
-        <div className="relative z-20 flex flex-col items-center justify-center">
-          <p className="font-sans text-sm sm:text-base font-semibold text-white tracking-tight">
-            Select or Drop your PDF
-          </p>
-          <p className="mt-1 font-sans text-[11px] sm:text-xs text-zinc-400 max-w-xs text-center">
-            Drag &amp; drop your document here, or tap to choose a file
-          </p>
+        <div className="relative z-20 flex flex-col items-center justify-center w-full">
+          {!files.length ? (
+            <>
+              <p className="font-sans text-base sm:text-lg font-semibold text-white tracking-tight">
+                {isDragActive ? "Release to drop your PDF" : "Drop your PDF here"}
+              </p>
+              <p className="mt-1 font-sans text-xs sm:text-sm text-zinc-400 max-w-xs text-center">
+                or click to browse from your device
+              </p>
+              <span className="mt-2.5 rounded-full border border-white/10 bg-white/[0.04] px-2.5 py-0.5 text-[11px] font-mono text-zinc-400">
+                PDF · Max 50 MB
+              </span>
+            </>
+          ) : (
+            <div className="flex items-center justify-between w-full max-w-lg mb-2 text-left">
+              <span className="text-xs font-medium text-zinc-400">Selected Document</span>
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleClick();
+                }}
+                className="text-[11px] text-zinc-400 hover:text-white underline cursor-pointer"
+              >
+                Choose another file
+              </button>
+            </div>
+          )}
 
-          <div className="relative mx-auto mt-5 sm:mt-7 w-full max-w-lg">
+          <div className="relative mx-auto mt-4 sm:mt-6 w-full max-w-lg">
             {files.length > 0 &&
               files.map((f, idx) => (
                 <motion.div
