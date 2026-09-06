@@ -291,38 +291,40 @@ export default function Home() {
     <div className="relative min-h-screen w-full bg-[#09090b] text-[#f4f4f5] overflow-x-hidden font-sans">
       {/* Ambient background light beam & subtle grid */}
       <div className="pointer-events-none absolute inset-x-0 -top-40 flex justify-center overflow-hidden">
-        <div className="h-[480px] w-[900px] bg-[radial-gradient(ellipse_60%_50%_at_50%_0%,rgba(120,119,198,0.18),rgba(255,255,255,0))]" />
+        <div className="h-[360px] sm:h-[480px] w-[700px] sm:w-[900px] bg-[radial-gradient(ellipse_60%_50%_at_50%_0%,rgba(120,119,198,0.18),rgba(255,255,255,0))]" />
       </div>
       <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(to_right,#ffffff05_1px,transparent_1px),linear-gradient(to_bottom,#ffffff05_1px,transparent_1px)] bg-[size:40px_40px] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_15%,#000_70%,transparent_100%)]" />
 
       {/* Header */}
-      <header className="relative z-10 mx-auto flex max-w-6xl items-center justify-between px-6 py-5 border-b border-white/[0.06]">
-        <div className="flex items-center gap-3">
-          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-b from-white/15 to-white/5 border border-white/10 shadow-[0_0_16px_rgba(255,255,255,0.06)]">
-            <Layers className="h-4 w-4 text-white" />
+      <header className="relative z-10 mx-auto flex max-w-6xl items-center justify-between px-4 sm:px-6 py-3.5 sm:py-5 border-b border-white/[0.06]">
+        <div className="flex items-center gap-2.5 sm:gap-3">
+          <div className="flex h-8 w-8 sm:h-9 sm:w-9 items-center justify-center rounded-xl bg-gradient-to-b from-white/15 to-white/5 border border-white/10 shadow-[0_0_16px_rgba(255,255,255,0.06)]">
+            <Layers className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-white" />
           </div>
-          <div className="flex items-center gap-2">
-            <span className="font-semibold tracking-tight text-white text-base">OPTIMA</span>
-            <span className="rounded-md border border-white/10 bg-white/[0.04] px-1.5 py-0.5 text-[10px] font-mono text-zinc-400">
+          <div className="flex items-center gap-1.5 sm:gap-2">
+            <span className="font-semibold tracking-tight text-white text-sm sm:text-base">OPTIMA</span>
+            <span className="rounded-md border border-white/10 bg-white/[0.04] px-1.5 py-0.5 text-[9px] sm:text-[10px] font-mono text-zinc-400">
               PDF v1.0
             </span>
           </div>
         </div>
 
-        <div className="flex items-center gap-4">
-          <div className="hidden sm:flex items-center gap-2 rounded-full border border-emerald-500/20 bg-emerald-500/[0.08] px-2.5 py-1 text-xs text-emerald-400">
-            <span className="relative flex h-2 w-2">
+        <div className="flex items-center gap-2.5 sm:gap-4">
+          <div className="flex items-center gap-1.5 sm:gap-2 rounded-full border border-emerald-500/20 bg-emerald-500/[0.08] px-2 py-0.5 sm:px-2.5 sm:py-1 text-[10px] sm:text-xs text-emerald-400">
+            <span className="relative flex h-1.5 w-1.5 sm:h-2 sm:w-2">
               <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
-              <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500" />
+              <span className="relative inline-flex h-1.5 w-1.5 sm:h-2 sm:w-2 rounded-full bg-emerald-500" />
             </span>
-            <span className="font-mono text-[11px] tracking-wide">Ghostscript Active</span>
+            <span className="font-mono text-[10px] sm:text-[11px] tracking-wide">
+              <span className="hidden sm:inline">Ghostscript </span>Active
+            </span>
           </div>
 
           <a
-            href="https://github.com"
+            href="https://github.com/heyavanindra/realpdfcompressor"
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center gap-1.5 text-xs text-zinc-400 hover:text-white transition-colors duration-150"
+            className="flex items-center gap-1 text-xs text-zinc-400 hover:text-white transition-colors duration-150 p-1.5 touch-manipulation"
           >
             <span>GitHub</span>
           </a>
@@ -330,37 +332,37 @@ export default function Home() {
       </header>
 
       {/* Hero Content */}
-      <main className="relative z-10 mx-auto flex max-w-3xl flex-col items-center px-6 pt-16 pb-24 text-center">
+      <main className="relative z-10 mx-auto flex max-w-3xl flex-col items-center px-4 sm:px-6 pt-8 sm:pt-16 pb-16 sm:pb-24 text-center">
         {/* Release Pill */}
-        <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.03] px-3.5 py-1 text-xs text-zinc-300 backdrop-blur-md transition-colors hover:border-white/20">
-          <Sparkles className="h-3.5 w-3.5 text-indigo-400" />
-          <span>High-Fidelity PDF Compression</span>
-          <span className="text-zinc-600">•</span>
-          <span className="text-zinc-400">Zero telemetry</span>
+        <div className="mb-4 sm:mb-6 inline-flex max-w-full items-center gap-1.5 sm:gap-2 rounded-full border border-white/10 bg-white/[0.03] px-3 sm:px-3.5 py-1 text-[11px] sm:text-xs text-zinc-300 backdrop-blur-md transition-colors hover:border-white/20">
+          <Sparkles className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-indigo-400 shrink-0" />
+          <span className="truncate">High-Fidelity PDF Compression</span>
+          <span className="text-zinc-600 hidden xs:inline">•</span>
+          <span className="text-zinc-400 hidden xs:inline">Zero telemetry</span>
         </div>
 
         {/* Title */}
-        <h1 className="max-w-2xl text-4xl sm:text-5xl font-semibold tracking-tight text-white leading-[1.15]">
+        <h1 className="max-w-2xl text-3xl sm:text-5xl font-semibold tracking-tight text-white leading-[1.15]">
           Compress PDFs with <br className="hidden sm:inline" />
           <span className="bg-gradient-to-b from-white via-zinc-200 to-zinc-500 bg-clip-text text-transparent">
             precision and clarity.
           </span>
         </h1>
 
-        <p className="mt-4 max-w-lg text-sm sm:text-base text-zinc-400 leading-relaxed">
+        <p className="mt-3 sm:mt-4 max-w-lg text-xs sm:text-base text-zinc-400 leading-relaxed px-2">
           Reduce file size by up to 90% without compromising vector text, layout geometry, or embedded fonts.
         </p>
 
         {/* Main Compression Console */}
-        <div className="mt-10 w-full rounded-2xl border border-white/[0.08] bg-[#121215]/80 p-5 sm:p-7 backdrop-blur-xl shadow-[0_16px_48px_rgba(0,0,0,0.6),0_0_0_1px_rgba(255,255,255,0.04)]">
+        <div className="mt-7 sm:mt-10 w-full rounded-2xl border border-white/[0.08] bg-[#121215]/80 p-3.5 sm:p-7 backdrop-blur-xl shadow-[0_16px_48px_rgba(0,0,0,0.6),0_0_0_1px_rgba(255,255,255,0.04)]">
           {/* Preset Quality Selector */}
-          <div className="mb-6">
-            <div className="mb-3 flex items-center justify-between text-left">
+          <div className="mb-4 sm:mb-6">
+            <div className="mb-2.5 sm:mb-3 flex items-center justify-between text-left">
               <span className="flex items-center gap-1.5 text-xs font-medium text-zinc-300">
                 <SlidersHorizontal className="h-3.5 w-3.5 text-zinc-400" />
                 Compression Level
               </span>
-              <span className="text-[11px] font-mono text-zinc-500">
+              <span className="text-[10px] sm:text-[11px] font-mono text-zinc-500">
                 Target: {PRESETS.find((p) => p.id === selectedPreset)?.dpi}
               </span>
             </div>
@@ -373,7 +375,7 @@ export default function Home() {
                     key={preset.id}
                     type="button"
                     onClick={() => setSelectedPreset(preset.id)}
-                    className={`group relative flex flex-col items-start rounded-xl p-3 text-left pressable cursor-pointer ${
+                    className={`group relative flex flex-col items-start rounded-xl p-2.5 sm:p-3 text-left pressable cursor-pointer min-h-[52px] select-none touch-manipulation ${
                       isSelected
                         ? "bg-white/[0.09] border border-white/25 shadow-[0_0_20px_rgba(255,255,255,0.06)]"
                         : "bg-white/[0.02] border border-white/[0.05] hover:bg-white/[0.04] hover:border-white/12"
@@ -391,7 +393,9 @@ export default function Home() {
                         <div className="h-1.5 w-1.5 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.9)] animate-pulse" />
                       )}
                     </div>
-                    <span className="mt-1 text-[10px] font-mono text-zinc-500">{preset.badge}</span>
+                    <span className="mt-1 text-[10px] font-mono text-zinc-500 truncate w-full">
+                      {preset.badge} • {preset.dpi}
+                    </span>
                   </button>
                 );
               })}
@@ -401,44 +405,44 @@ export default function Home() {
           {/* Upload / State Stage */}
           {status === "completed" && result ? (
             /* Completed Result Card */
-            <div className="animate-pop-in flex flex-col items-center rounded-xl border border-white/[0.08] bg-black/40 p-6 sm:p-8">
-              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/25 shadow-[0_0_24px_rgba(16,185,129,0.2)]">
-                <CheckCircle2 className="h-6 w-6" />
+            <div className="animate-pop-in flex flex-col items-center rounded-xl border border-white/[0.08] bg-black/40 p-4 sm:p-8">
+              <div className="flex h-10 w-10 sm:h-12 sm:w-12 items-center justify-center rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/25 shadow-[0_0_24px_rgba(16,185,129,0.2)]">
+                <CheckCircle2 className="h-5 w-5 sm:h-6 sm:w-6" />
               </div>
 
-              <h3 className="mt-3 text-lg font-medium text-white">Compression Complete</h3>
-              <p className="mt-1 font-mono text-xs text-zinc-400">{file?.name}</p>
+              <h3 className="mt-2.5 sm:mt-3 text-base sm:text-lg font-medium text-white">Compression Complete</h3>
+              <p className="mt-1 font-mono text-xs text-zinc-400 truncate max-w-[240px] sm:max-w-md">{file?.name}</p>
 
               {/* Stats Comparison Grid */}
-              <div className="mt-6 grid w-full grid-cols-3 gap-3 rounded-xl border border-white/[0.06] bg-white/[0.02] p-3 text-center">
+              <div className="mt-4 sm:mt-6 grid w-full grid-cols-3 gap-1.5 sm:gap-3 rounded-xl border border-white/[0.06] bg-white/[0.02] p-2 sm:p-3 text-center">
                 <div className="animate-pop-in flex flex-col py-1">
-                  <span className="text-[10px] font-mono uppercase text-zinc-500">Original</span>
-                  <span className="mt-0.5 font-mono text-sm text-zinc-400">
+                  <span className="text-[9px] sm:text-[10px] font-mono uppercase text-zinc-500">Original</span>
+                  <span className="mt-0.5 font-mono text-xs sm:text-sm text-zinc-300">
                     {formatBytes(result.originalSize)}
                   </span>
                 </div>
 
                 <div className="animate-pop-in stagger-1 flex flex-col border-x border-white/[0.06] py-1">
-                  <span className="text-[10px] font-mono uppercase text-zinc-500">Compressed</span>
-                  <span className="mt-0.5 font-mono text-sm font-semibold text-emerald-400">
+                  <span className="text-[9px] sm:text-[10px] font-mono uppercase text-zinc-500">Compressed</span>
+                  <span className="mt-0.5 font-mono text-xs sm:text-sm font-semibold text-emerald-400">
                     {formatBytes(result.compressedSize)}
                   </span>
                 </div>
 
                 <div className="animate-pop-in stagger-2 flex flex-col rounded-lg bg-indigo-500/[0.08] border border-indigo-500/20 py-1">
-                  <span className="text-[10px] font-mono uppercase text-indigo-400/90 font-medium">Saved</span>
-                  <span className="mt-0.5 font-mono text-sm font-semibold text-indigo-300">
+                  <span className="text-[9px] sm:text-[10px] font-mono uppercase text-indigo-400/90 font-medium">Saved</span>
+                  <span className="mt-0.5 font-mono text-xs sm:text-sm font-semibold text-indigo-300">
                     -{result.ratio}%
                   </span>
                 </div>
               </div>
 
               {/* Action Buttons */}
-              <div className="mt-6 flex w-full flex-col sm:flex-row gap-3">
+              <div className="mt-5 sm:mt-6 flex w-full flex-col sm:flex-row gap-2.5 sm:gap-3">
                 <button
                   type="button"
                   onClick={handleDownload}
-                  className="group relative flex flex-1 items-center justify-center gap-2 rounded-xl bg-white px-5 py-3 text-sm font-medium text-black shadow-[0_0_28px_rgba(255,255,255,0.18)] pressable hover:bg-zinc-100"
+                  className="group relative flex flex-1 items-center justify-center gap-2 rounded-xl bg-white px-4 sm:px-5 py-3.5 text-sm font-medium text-black shadow-[0_0_28px_rgba(255,255,255,0.18)] pressable hover:bg-zinc-100 touch-manipulation min-h-[48px]"
                 >
                   <Download className="h-4 w-4 transition-transform duration-150 ease-out group-hover:-translate-y-0.5" />
                   Download Compressed PDF
@@ -447,7 +451,7 @@ export default function Home() {
                 <button
                   type="button"
                   onClick={resetAll}
-                  className="group flex items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/[0.04] px-4 py-3 text-sm font-medium text-zinc-300 pressable hover:bg-white/[0.08] hover:text-white hover:border-white/20"
+                  className="group flex items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/[0.04] px-4 py-3.5 text-sm font-medium text-zinc-300 pressable hover:bg-white/[0.08] hover:text-white hover:border-white/20 touch-manipulation min-h-[48px]"
                 >
                   <RotateCcw className="h-4 w-4 text-zinc-400 transition-transform duration-200 ease-out group-hover:-rotate-45" />
                   Compress Another
@@ -456,19 +460,19 @@ export default function Home() {
             </div>
           ) : status === "compressing" ? (
             /* Processing State */
-            <div className="animate-pop-in flex flex-col items-center justify-center rounded-xl border border-white/[0.08] bg-black/40 py-12 px-6">
-              <div className="relative flex h-14 w-14 items-center justify-center">
+            <div className="animate-pop-in flex flex-col items-center justify-center rounded-xl border border-white/[0.08] bg-black/40 py-8 sm:py-12 px-4 sm:px-6">
+              <div className="relative flex h-12 w-12 sm:h-14 sm:w-14 items-center justify-center">
                 <div className="absolute inset-0 rounded-full border-2 border-indigo-500/20 border-t-indigo-400 animate-fast-spin" />
-                <Zap className="h-6 w-6 text-indigo-400 animate-pulse" />
+                <Zap className="h-5 w-5 sm:h-6 sm:w-6 text-indigo-400 animate-pulse" />
               </div>
 
-              <span className="mt-5 text-sm font-medium text-zinc-200">Optimizing Document</span>
-              <span className="mt-1 font-mono text-xs text-zinc-400 max-w-xs truncate transition-all duration-200">
+              <span className="mt-4 sm:mt-5 text-xs sm:text-sm font-medium text-zinc-200">Optimizing Document</span>
+              <span className="mt-1 font-mono text-[11px] sm:text-xs text-zinc-400 max-w-[240px] sm:max-w-xs truncate transition-all duration-200">
                 {statusMessage}
               </span>
 
               {/* Subtle shimmer progress line */}
-              <div className="mt-6 h-1 w-52 overflow-hidden rounded-full bg-white/[0.06]">
+              <div className="mt-5 sm:mt-6 h-1 w-44 sm:w-52 overflow-hidden rounded-full bg-white/[0.06]">
                 <div className="h-full w-full bg-gradient-to-r from-transparent via-indigo-400 to-transparent animate-shimmer" />
               </div>
             </div>
@@ -487,7 +491,7 @@ export default function Home() {
 
           {/* Error Message */}
           {errorMessage && (
-            <div className="animate-pop-in mt-4 flex items-center gap-2 rounded-lg border border-red-500/20 bg-red-500/[0.08] px-3.5 py-2.5 text-xs text-red-400">
+            <div className="animate-pop-in mt-3.5 sm:mt-4 flex items-center gap-2 rounded-lg border border-red-500/20 bg-red-500/[0.08] px-3.5 py-2.5 text-xs text-red-400">
               <AlertCircle className="h-4 w-4 shrink-0" />
               <span>{errorMessage}</span>
             </div>
@@ -495,12 +499,12 @@ export default function Home() {
 
           {/* Compress Trigger Button */}
           {status !== "completed" && status !== "compressing" && (
-            <div className="mt-6 flex justify-end">
+            <div className="mt-4 sm:mt-6 flex justify-end">
               <button
                 type="button"
                 disabled={!file}
                 onClick={runCompression}
-                className={`group relative flex w-full items-center justify-center gap-2 rounded-xl py-3 px-5 text-sm font-medium pressable ${
+                className={`group relative flex w-full items-center justify-center gap-2 rounded-xl py-3.5 px-5 text-sm font-medium pressable touch-manipulation min-h-[48px] ${
                   file
                     ? "bg-white text-black shadow-[0_0_28px_rgba(255,255,255,0.22)] hover:bg-zinc-100 cursor-pointer"
                     : "bg-white/[0.04] text-zinc-500 border border-white/[0.05] cursor-not-allowed"
@@ -514,32 +518,32 @@ export default function Home() {
         </div>
 
         {/* Feature Cards Grid */}
-        <div className="mt-14 grid w-full grid-cols-1 gap-4 text-left sm:grid-cols-3">
-          <div className="group rounded-xl border border-white/[0.06] bg-white/[0.02] p-5 transition-all duration-200 hover:border-white/15 hover:bg-white/[0.035] hover:-translate-y-0.5">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg border border-white/10 bg-white/[0.04] text-zinc-300 transition-transform duration-200 group-hover:scale-110 group-hover:text-white">
-              <Zap className="h-4 w-4" />
+        <div className="mt-10 sm:mt-14 grid w-full grid-cols-1 gap-3 sm:gap-4 text-left sm:grid-cols-3">
+          <div className="group rounded-xl border border-white/[0.06] bg-white/[0.02] p-4 sm:p-5 transition-all duration-200 hover:border-white/15 hover:bg-white/[0.035] hover:-translate-y-0.5">
+            <div className="flex h-7 w-7 sm:h-8 sm:w-8 items-center justify-center rounded-lg border border-white/10 bg-white/[0.04] text-zinc-300 transition-transform duration-200 group-hover:scale-110 group-hover:text-white">
+              <Zap className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
             </div>
-            <h4 className="mt-3 text-sm font-medium text-white">Ghostscript Core</h4>
+            <h4 className="mt-2.5 sm:mt-3 text-sm font-medium text-white">Ghostscript Core</h4>
             <p className="mt-1 text-xs text-zinc-400 leading-relaxed">
               Industrial grade rasterizer and font subsetting algorithm for genuine reductions.
             </p>
           </div>
 
-          <div className="group rounded-xl border border-white/[0.06] bg-white/[0.02] p-5 transition-all duration-200 hover:border-white/15 hover:bg-white/[0.035] hover:-translate-y-0.5">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg border border-white/10 bg-white/[0.04] text-zinc-300 transition-transform duration-200 group-hover:scale-110 group-hover:text-white">
-              <Lock className="h-4 w-4" />
+          <div className="group rounded-xl border border-white/[0.06] bg-white/[0.02] p-4 sm:p-5 transition-all duration-200 hover:border-white/15 hover:bg-white/[0.035] hover:-translate-y-0.5">
+            <div className="flex h-7 w-7 sm:h-8 sm:w-8 items-center justify-center rounded-lg border border-white/10 bg-white/[0.04] text-zinc-300 transition-transform duration-200 group-hover:scale-110 group-hover:text-white">
+              <Lock className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
             </div>
-            <h4 className="mt-3 text-sm font-medium text-white">Zero Persistence</h4>
+            <h4 className="mt-2.5 sm:mt-3 text-sm font-medium text-white">Zero Persistence</h4>
             <p className="mt-1 text-xs text-zinc-400 leading-relaxed">
               Files are processed in ephemeral streams and purged immediately after compression.
             </p>
           </div>
 
-          <div className="group rounded-xl border border-white/[0.06] bg-white/[0.02] p-5 transition-all duration-200 hover:border-white/15 hover:bg-white/[0.035] hover:-translate-y-0.5">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg border border-white/10 bg-white/[0.04] text-zinc-300 transition-transform duration-200 group-hover:scale-110 group-hover:text-white">
-              <ShieldCheck className="h-4 w-4" />
+          <div className="group rounded-xl border border-white/[0.06] bg-white/[0.02] p-4 sm:p-5 transition-all duration-200 hover:border-white/15 hover:bg-white/[0.035] hover:-translate-y-0.5">
+            <div className="flex h-7 w-7 sm:h-8 sm:w-8 items-center justify-center rounded-lg border border-white/10 bg-white/[0.04] text-zinc-300 transition-transform duration-200 group-hover:scale-110 group-hover:text-white">
+              <ShieldCheck className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
             </div>
-            <h4 className="mt-3 text-sm font-medium text-white">Searchable Text</h4>
+            <h4 className="mt-2.5 sm:mt-3 text-sm font-medium text-white">Searchable Text</h4>
             <p className="mt-1 text-xs text-zinc-400 leading-relaxed">
               Vector glyphs and OCR text layers are untouched. PDF retains full searchability.
             </p>

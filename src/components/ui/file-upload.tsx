@@ -75,12 +75,12 @@ export const FileUpload = ({
   });
 
   return (
-    <div className="w-full" {...getRootProps()}>
+    <div className="w-full select-none touch-manipulation" {...getRootProps()}>
       <motion.div
         onClick={handleClick}
         whileHover="animate"
         className={cn(
-          "group/file relative block w-full cursor-pointer overflow-hidden rounded-2xl border-2 border-dashed p-8 sm:p-10 transition-all duration-200",
+          "group/file relative block w-full cursor-pointer overflow-hidden rounded-2xl border-2 border-dashed p-4 sm:p-9 transition-all duration-200",
           isDragActive
             ? "border-indigo-400 bg-indigo-500/[0.08] shadow-[0_0_32px_rgba(99,102,241,0.2)]"
             : "border-white/10 bg-white/[0.01] hover:border-white/20 hover:bg-white/[0.02]"
@@ -94,18 +94,18 @@ export const FileUpload = ({
           onChange={(e) => handleFileChange(Array.from(e.target.files || []))}
           className="hidden"
         />
-        <div className="absolute inset-0 pointer-events-none [mask-image:radial-gradient(ellipse_at_center,white,transparent)] opacity-40">
+        <div className="absolute inset-0 pointer-events-none overflow-hidden [mask-image:radial-gradient(ellipse_at_center,white,transparent)] opacity-35">
           <GridPattern />
         </div>
         <div className="relative z-20 flex flex-col items-center justify-center">
-          <p className="font-sans text-base font-semibold text-white tracking-tight">
+          <p className="font-sans text-sm sm:text-base font-semibold text-white tracking-tight">
             Upload PDF Document
           </p>
-          <p className="mt-1 font-sans text-xs text-zinc-400">
-            Drag and drop your PDF here or click to browse
+          <p className="mt-1 font-sans text-[11px] sm:text-xs text-zinc-400 max-w-xs text-center">
+            Drag &amp; drop your PDF here, or tap to browse files
           </p>
 
-          <div className="relative mx-auto mt-7 w-full max-w-lg">
+          <div className="relative mx-auto mt-5 sm:mt-7 w-full max-w-lg">
             {files.length > 0 &&
               files.map((f, idx) => (
                 <motion.div
@@ -116,33 +116,33 @@ export const FileUpload = ({
                   transition={{ duration: 0.2, ease: [0.23, 1, 0.32, 1] }}
                   onClick={(e) => e.stopPropagation()}
                   className={cn(
-                    "relative z-40 mx-auto flex w-full flex-col items-start justify-start overflow-hidden rounded-xl border border-white/15 bg-[#18181b]/95 p-4 shadow-xl backdrop-blur-xl"
+                    "relative z-40 mx-auto flex w-full flex-col items-start justify-start overflow-hidden rounded-xl border border-white/15 bg-[#18181b]/95 p-3.5 sm:p-4 shadow-xl backdrop-blur-xl"
                   )}
                 >
-                  <div className="flex w-full items-center justify-between gap-3">
-                    <div className="flex items-center gap-2.5 min-w-0">
-                      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-indigo-500/20 bg-indigo-500/10 text-indigo-400">
-                        <IconFileText className="h-5 w-5" />
+                  <div className="flex w-full items-center justify-between gap-2 sm:gap-3">
+                    <div className="flex items-center gap-2.5 min-w-0 flex-1">
+                      <div className="flex h-8 w-8 sm:h-9 sm:w-9 shrink-0 items-center justify-center rounded-lg border border-indigo-500/20 bg-indigo-500/10 text-indigo-400">
+                        <IconFileText className="h-4 w-4 sm:h-5 sm:w-5" />
                       </div>
                       <div className="min-w-0 flex-1 text-left">
-                        <p className="truncate text-sm font-medium text-white">
+                        <p className="truncate text-xs sm:text-sm font-medium text-white max-w-[130px] sm:max-w-xs">
                           {f.name}
                         </p>
-                        <p className="font-mono text-[11px] text-zinc-400">
+                        <p className="font-mono text-[10px] sm:text-[11px] text-zinc-400">
                           {(f.size / (1024 * 1024)).toFixed(2)} MB
                         </p>
                       </div>
                     </div>
 
-                    <div className="flex items-center gap-2">
-                      <span className="hidden sm:inline-block rounded-md border border-white/10 bg-white/[0.05] px-2 py-0.5 text-[10px] font-mono text-zinc-300">
+                    <div className="flex items-center gap-1.5 shrink-0">
+                      <span className="rounded-md border border-white/10 bg-white/[0.05] px-1.5 py-0.5 text-[9px] sm:text-[10px] font-mono text-zinc-300">
                         PDF
                       </span>
                       {onClear && (
                         <button
                           type="button"
                           onClick={handleClear}
-                          className="rounded-lg p-1 text-zinc-400 transition-colors hover:bg-white/10 hover:text-white active:scale-95"
+                          className="touch-manipulation rounded-lg p-2 text-zinc-400 transition-colors hover:bg-white/10 hover:text-white active:scale-90 min-h-[36px] min-w-[36px] flex items-center justify-center cursor-pointer"
                           title="Remove file"
                         >
                           <IconX className="h-4 w-4" />
@@ -163,7 +163,7 @@ export const FileUpload = ({
                   damping: 20,
                 }}
                 className={cn(
-                  "relative z-40 mx-auto flex h-28 w-full max-w-[7.5rem] items-center justify-center rounded-2xl border border-white/15 bg-white/[0.04] shadow-[0_12px_36px_rgba(0,0,0,0.4)] backdrop-blur-md transition-shadow group-hover/file:shadow-[0_0_24px_rgba(255,255,255,0.1)]"
+                  "relative z-40 mx-auto flex h-20 w-24 sm:h-28 sm:max-w-[7.5rem] items-center justify-center rounded-2xl border border-white/15 bg-white/[0.04] shadow-[0_12px_36px_rgba(0,0,0,0.4)] backdrop-blur-md transition-shadow group-hover/file:shadow-[0_0_24px_rgba(255,255,255,0.1)]"
                 )}
               >
                 {isDragActive ? (
@@ -172,11 +172,11 @@ export const FileUpload = ({
                     animate={{ opacity: 1, scale: 1 }}
                     className="flex flex-col items-center gap-1 text-indigo-400 text-xs font-medium"
                   >
-                    <span>Drop PDF here</span>
+                    <span className="text-[11px]">Drop PDF</span>
                     <IconUpload className="h-4 w-4 text-indigo-400" />
                   </motion.div>
                 ) : (
-                  <IconUpload className="h-6 w-6 text-zinc-300 transition-transform duration-200 group-hover/file:scale-110 group-hover/file:text-white" />
+                  <IconUpload className="h-5 w-5 sm:h-6 sm:w-6 text-zinc-300 transition-transform duration-200 group-hover/file:scale-110 group-hover/file:text-white" />
                 )}
               </motion.div>
             )}
@@ -184,7 +184,7 @@ export const FileUpload = ({
             {!files.length && (
               <motion.div
                 variants={secondaryVariant}
-                className="absolute inset-0 z-30 mx-auto flex h-28 w-full max-w-[7.5rem] items-center justify-center rounded-2xl border border-dashed border-indigo-400/60 bg-indigo-500/[0.04] opacity-0"
+                className="absolute inset-0 z-30 mx-auto flex h-20 w-24 sm:h-28 sm:max-w-[7.5rem] items-center justify-center rounded-2xl border border-dashed border-indigo-400/60 bg-indigo-500/[0.04] opacity-0"
               />
             )}
           </div>

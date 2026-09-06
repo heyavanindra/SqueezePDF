@@ -95,16 +95,16 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* Tactile press response */
+/* Tactile press response for both desktop mouse and mobile touch */
 .pressable {
   transition: transform 140ms var(--ease-out), filter 140ms var(--ease-out), opacity 140ms var(--ease-out);
   will-change: transform;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
 }
 
-@media (hover: hover) and (pointer: fine) {
-  .pressable:active {
-    transform: scale(0.97);
-  }
+.pressable:active {
+  transform: scale(0.97);
 }
 
 /* Pop-in entry - never from scale(0), always natural scale(0.96) */
