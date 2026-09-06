@@ -24,6 +24,8 @@ export interface CompleteMessageResponse {
 export interface ProgressMessageResponse {
   type: "progress";
   message: string;
+  page?: number;
+  totalPages?: number;
 }
 
 export interface ErrorMessageResponse {
@@ -51,6 +53,21 @@ const SETTINGS: Record<string, string> = {
 
 let gsInstance: GhostscriptModule | null = null;
 let initPromise: Promise<GhostscriptModule> | null = null;
+let currentTotalPages = 1;
+
+function estimatePdfPages(bytes: Uint8Array): number {
+  try {
+    const decoder = new TextDecoder("latin1");
+    const sample = decoder.decode(bytes.subarray(0, Math.min(bytes.length, 2 * 1024 * 1024)));
+    const matches = sample.match(/\/Type\s*\/Page\b/g);
+    if (matches && matches.length > 0) {
+      return matches.length;
+    }
+  } catch {
+    // fallback
+  }
+  return 1;
+}
 
 async function getGhostscript(
   wasmUrl?: string,
@@ -74,9 +91,14 @@ async function getGhostscript(
       },
       print: (text: string) => {
         if (text && text.trim()) {
+          const trimmed = text.trim();
+          const pageMatch = trimmed.match(/Page\s+(\d+)/i);
+          const page = pageMatch ? parseInt(pageMatch[1], 10) : undefined;
           self.postMessage({
             type: "progress",
-            message: text.trim(),
+            message: page ? `Processing Page ${page} of ${currentTotalPages}` : trimmed,
+            page,
+            totalPages: currentTotalPages,
           } satisfies ProgressMessageResponse);
         }
       },
@@ -158,6 +180,9 @@ self.onmessage = async (event: MessageEvent<CompressMessageData>) => {
       throw new Error("Input PDF buffer is empty.");
     }
 
+    // Estimate page count for granular progress feedback
+    currentTotalPages = Math.max(1, estimatePdfPages(inputBytes));
+
     // Clean up any stale files from previous operations
     try {
       gs.FS.unlink("/input.pdf");
@@ -183,7 +208,6 @@ self.onmessage = async (event: MessageEvent<CompressMessageData>) => {
             "-dCompatibilityLevel=1.4",
             `-dPDFSETTINGS=${pdfSetting}`,
             "-dNOPAUSE",
-            "-dQUIET",
             "-dBATCH",
             "-sOutputFile=/output.pdf",
             "/input.pdf",

@@ -19,6 +19,7 @@ import {
   Lock,
 } from "lucide-react";
 import { FileUpload } from "@/components/ui/file-upload";
+import { Progress } from "@/components/ui/progress";
 import type { WorkerResponse, CompressMessageData } from "../workers/pdf.worker";
 
 type CompressionResolution = "screen" | "ebook" | "printer" | "prepress";
@@ -39,35 +40,35 @@ const PRESETS: {
   dpi: string;
   description: string;
 }[] = [
-  {
-    id: "screen",
-    name: "Max Compress",
-    badge: "Extreme",
-    dpi: "72 DPI",
-    description: "Lowest file size. Perfect for email attachments & fast web sharing.",
-  },
-  {
-    id: "ebook",
-    name: "Balanced",
-    badge: "Recommended",
-    dpi: "150 DPI",
-    description: "Great balance of clarity and file reduction for modern displays.",
-  },
-  {
-    id: "printer",
-    name: "High Quality",
-    badge: "Print Ready",
-    dpi: "300 DPI",
-    description: "Maintains high resolution for printing and detailed typography.",
-  },
-  {
-    id: "prepress",
-    name: "Lossless",
-    badge: "Maximum",
-    dpi: "Original",
-    description: "Preserves full color fidelity and high resolution images.",
-  },
-];
+    {
+      id: "screen",
+      name: "Max Compress",
+      badge: "Extreme",
+      dpi: "72 DPI",
+      description: "Lowest file size. Perfect for email attachments & fast web sharing.",
+    },
+    {
+      id: "ebook",
+      name: "Balanced",
+      badge: "Recommended",
+      dpi: "150 DPI",
+      description: "Great balance of clarity and file reduction for modern displays.",
+    },
+    {
+      id: "printer",
+      name: "High Quality",
+      badge: "Print Ready",
+      dpi: "300 DPI",
+      description: "Maintains high resolution for printing and detailed typography.",
+    },
+    {
+      id: "prepress",
+      name: "Lossless",
+      badge: "Maximum",
+      dpi: "Original",
+      description: "Preserves full color fidelity and high resolution images.",
+    },
+  ];
 
 function formatBytes(bytes: number, decimals = 1): string {
   if (bytes === 0) return "0 B";
@@ -83,6 +84,8 @@ export default function Home() {
   const [file, setFile] = useState<File | null>(null);
   const [status, setStatus] = useState<"idle" | "compressing" | "completed" | "error">("idle");
   const [statusMessage, setStatusMessage] = useState("");
+  const [progress, setProgress] = useState(0);
+  const [elapsedSec, setElapsedSec] = useState(0);
   const [errorMessage, setErrorMessage] = useState("");
   const [result, setResult] = useState<CompressionResult | null>(null);
   const [, startTransition] = useTransition();
@@ -148,6 +151,8 @@ export default function Home() {
     setStatus("idle");
     setErrorMessage("");
     setResult(null);
+    setProgress(0);
+    setElapsedSec(0);
   };
 
   const runCompression = async () => {
@@ -155,6 +160,8 @@ export default function Home() {
 
     setStatus("compressing");
     setErrorMessage("");
+    setProgress(12);
+    setElapsedSec(0);
 
     const startTime = performance.now();
 
@@ -170,12 +177,22 @@ export default function Home() {
       "Linearizing and writing output PDF...",
     ];
 
-    let stepIndex = 0;
     setStatusMessage(steps[0]);
-    const stepInterval = setInterval(() => {
-      stepIndex = (stepIndex + 1) % steps.length;
-      setStatusMessage(steps[stepIndex]);
-    }, 600);
+
+    // Live elapsed timer & smooth progress interpolation
+    const timer = setInterval(() => {
+      const elapsed = (performance.now() - startTime) / 1000;
+      setElapsedSec(elapsed);
+
+      // Smoothly advance progress between 12% and 88% while processing
+      setProgress((prev) => {
+        if (prev < 88) {
+          const delta = (88 - prev) * 0.08;
+          return Math.min(88, prev + Math.max(0.3, delta));
+        }
+        return prev;
+      });
+    }, 100);
 
     try {
       let worker = workerRef.current;
@@ -195,6 +212,10 @@ export default function Home() {
           if (data.type === "progress") {
             if (data.message) {
               setStatusMessage(data.message);
+            }
+            if (data.page && data.totalPages && data.totalPages > 0) {
+              const pagePercent = Math.round(20 + (data.page / data.totalPages) * 65);
+              setProgress((prev) => Math.max(prev, Math.min(88, pagePercent)));
             }
           } else if (data.type === "complete") {
             cleanup();
@@ -228,7 +249,9 @@ export default function Home() {
         );
       });
 
-      clearInterval(stepInterval);
+      clearInterval(timer);
+      setProgress(100);
+      setStatusMessage("Finalizing output PDF...");
 
       const blob = new Blob([compressedPdfBytes as unknown as BlobPart], {
         type: "application/pdf",
@@ -239,19 +262,22 @@ export default function Home() {
       const elapsed = Math.round(performance.now() - startTime);
       const ratio = Math.max(0, Math.round((1 - finalCompressedSize / file.size) * 100));
 
-      startTransition(() => {
-        setResult({
-          filename: file.name.replace(/\.pdf$/i, "-compressed.pdf"),
-          originalSize: file.size,
-          compressedSize: finalCompressedSize,
-          ratio,
-          durationMs: elapsed,
-          blobUrl,
+      // Brief 220ms pause so the user sees the progress bar reach 100%
+      setTimeout(() => {
+        startTransition(() => {
+          setResult({
+            filename: file.name.replace(/\.pdf$/i, "-compressed.pdf"),
+            originalSize: file.size,
+            compressedSize: finalCompressedSize,
+            ratio,
+            durationMs: elapsed,
+            blobUrl,
+          });
+          setStatus("completed");
         });
-        setStatus("completed");
-      });
+      }, 220);
     } catch (err: unknown) {
-      clearInterval(stepInterval);
+      clearInterval(timer);
       const msg = err instanceof Error ? err.message : "Compression failed. Please try again.";
       setErrorMessage(msg);
       setStatus("error");
@@ -285,6 +311,8 @@ export default function Home() {
     setStatus("idle");
     setResult(null);
     setErrorMessage("");
+    setProgress(0);
+    setElapsedSec(0);
   };
 
   return (
@@ -304,7 +332,7 @@ export default function Home() {
           <div className="flex items-center gap-1.5 sm:gap-2">
             <span className="font-semibold tracking-tight text-white text-sm sm:text-base">OPTIMA</span>
             <span className="rounded-md border border-white/10 bg-white/[0.04] px-1.5 py-0.5 text-[9px] sm:text-[10px] font-mono text-zinc-400">
-              PDF v1.0
+              PDF v1.1
             </span>
           </div>
         </div>
@@ -375,17 +403,15 @@ export default function Home() {
                     key={preset.id}
                     type="button"
                     onClick={() => setSelectedPreset(preset.id)}
-                    className={`group relative flex flex-col items-start rounded-xl p-2.5 sm:p-3 text-left pressable cursor-pointer min-h-[52px] select-none touch-manipulation ${
-                      isSelected
+                    className={`group relative flex flex-col items-start rounded-xl p-2.5 sm:p-3 text-left pressable cursor-pointer min-h-[52px] select-none touch-manipulation ${isSelected
                         ? "bg-white/[0.09] border border-white/25 shadow-[0_0_20px_rgba(255,255,255,0.06)]"
                         : "bg-white/[0.02] border border-white/[0.05] hover:bg-white/[0.04] hover:border-white/12"
-                    }`}
+                      }`}
                   >
                     <div className="flex w-full items-center justify-between">
                       <span
-                        className={`text-xs font-medium transition-colors duration-140 ${
-                          isSelected ? "text-white" : "text-zinc-400 group-hover:text-zinc-200"
-                        }`}
+                        className={`text-xs font-medium transition-colors duration-140 ${isSelected ? "text-white" : "text-zinc-400 group-hover:text-zinc-200"
+                          }`}
                       >
                         {preset.name}
                       </span>
@@ -459,21 +485,35 @@ export default function Home() {
               </div>
             </div>
           ) : status === "compressing" ? (
-            /* Processing State */
-            <div className="animate-pop-in flex flex-col items-center justify-center rounded-xl border border-white/[0.08] bg-black/40 py-8 sm:py-12 px-4 sm:px-6">
+            /* Processing State with Rich Progress Bar */
+            <div className="animate-pop-in flex flex-col items-center justify-center rounded-xl border border-white/[0.08] bg-black/40 py-8 sm:py-10 px-4 sm:px-8 w-full">
               <div className="relative flex h-12 w-12 sm:h-14 sm:w-14 items-center justify-center">
                 <div className="absolute inset-0 rounded-full border-2 border-indigo-500/20 border-t-indigo-400 animate-fast-spin" />
                 <Zap className="h-5 w-5 sm:h-6 sm:w-6 text-indigo-400 animate-pulse" />
               </div>
 
-              <span className="mt-4 sm:mt-5 text-xs sm:text-sm font-medium text-zinc-200">Optimizing Document</span>
-              <span className="mt-1 font-mono text-[11px] sm:text-xs text-zinc-400 max-w-[240px] sm:max-w-xs truncate transition-all duration-200">
-                {statusMessage}
-              </span>
+              <div className="mt-5 flex items-center justify-between w-full max-w-sm px-0.5">
+                <span className="text-xs sm:text-sm font-medium text-zinc-200">
+                  Optimizing Document
+                </span>
+                <span className="font-mono text-xs sm:text-sm font-semibold text-emerald-400">
+                  {Math.round(progress)}%
+                </span>
+              </div>
 
-              {/* Subtle shimmer progress line */}
-              <div className="mt-5 sm:mt-6 h-1 w-44 sm:w-52 overflow-hidden rounded-full bg-white/[0.06]">
-                <div className="h-full w-full bg-gradient-to-r from-transparent via-indigo-400 to-transparent animate-shimmer" />
+              {/* Progress Bar Component */}
+              <div className="mt-2.5 w-full max-w-sm">
+                <Progress value={progress} />
+              </div>
+
+              {/* Status details & live elapsed timer */}
+              <div className="mt-3 flex items-center justify-between w-full max-w-sm text-[11px] font-mono text-zinc-400">
+                <span className="truncate max-w-[200px] sm:max-w-[240px] text-left">
+                  {statusMessage}
+                </span>
+                <span className="shrink-0 text-zinc-500 pl-2">
+                  {elapsedSec.toFixed(1)}s
+                </span>
               </div>
             </div>
           ) : (
@@ -504,11 +544,10 @@ export default function Home() {
                 type="button"
                 disabled={!file}
                 onClick={runCompression}
-                className={`group relative flex w-full items-center justify-center gap-2 rounded-xl py-3.5 px-5 text-sm font-medium pressable touch-manipulation min-h-[48px] ${
-                  file
+                className={`group relative flex w-full items-center justify-center gap-2 rounded-xl py-3.5 px-5 text-sm font-medium pressable touch-manipulation min-h-[48px] ${file
                     ? "bg-white text-black shadow-[0_0_28px_rgba(255,255,255,0.22)] hover:bg-zinc-100 cursor-pointer"
                     : "bg-white/[0.04] text-zinc-500 border border-white/[0.05] cursor-not-allowed"
-                }`}
+                  }`}
               >
                 <span>Compress File</span>
                 <ArrowRight className="h-4 w-4 transition-transform duration-150 ease-out group-hover:translate-x-1" />
