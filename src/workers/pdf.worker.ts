@@ -14,6 +14,7 @@ export interface CompressMessageData {
   wasmUrl?: string;
   wasmBinary?: ArrayBuffer;
   customArgs?: string[];
+  totalPages?: number;
 }
 
 export interface CompleteMessageResponse {
@@ -21,9 +22,12 @@ export interface CompleteMessageResponse {
   pdf: Uint8Array;
 }
 
+export type ProgressStage = "init" | "parsing" | "page" | "finalizing";
+
 export interface ProgressMessageResponse {
   type: "progress";
   message: string;
+  stage?: ProgressStage;
   page?: number;
   totalPages?: number;
 }
@@ -54,6 +58,7 @@ const SETTINGS: Record<string, string> = {
 let gsInstance: GhostscriptModule | null = null;
 let initPromise: Promise<GhostscriptModule> | null = null;
 let currentTotalPages = 1;
+let lastReportedPage = 0;
 
 function estimatePdfPages(bytes: Uint8Array): number {
   try {
@@ -68,6 +73,78 @@ function estimatePdfPages(bytes: Uint8Array): number {
   }
   return 1;
 }
+
+function parseAndForwardGhostscriptLog(text: string) {
+  if (!text || !text.trim()) return;
+  const trimmed = text.trim();
+
+  // Match "Page 1", "Page 2", etc.
+  const pageMatch = trimmed.match(/^Page\s+(\d+)$/i);
+  if (pageMatch) {
+    const page = parseInt(pageMatch[1], 10);
+    lastReportedPage = page;
+    const isFinalPage = page >= currentTotalPages;
+    self.postMessage({
+      type: "progress",
+      stage: isFinalPage ? "finalizing" : "page",
+      message: isFinalPage
+        ? `Finalizing page ${page} of ${currentTotalPages}...`
+        : `Optimizing page ${page} of ${currentTotalPages}...`,
+      page,
+      totalPages: currentTotalPages,
+    } satisfies ProgressMessageResponse);
+    return;
+  }
+
+  // Match font loading
+  if (trimmed.includes("Loading font")) {
+    const fontMatch = trimmed.match(/Loading font\s+([^\s(]+)/i);
+    const fontName = fontMatch ? fontMatch[1] : "vector font";
+    self.postMessage({
+      type: "progress",
+      stage: "page",
+      message: `Subsetting ${fontName} for page ${lastReportedPage || 1}...`,
+      page: lastReportedPage || 1,
+      totalPages: currentTotalPages,
+    } satisfies ProgressMessageResponse);
+    return;
+  }
+
+  // Match general processing stages
+  if (trimmed.includes("Processing pages")) {
+    self.postMessage({
+      type: "progress",
+      stage: "parsing",
+      message: `Processing pages 1 through ${currentTotalPages}...`,
+      page: 1,
+      totalPages: currentTotalPages,
+    } satisfies ProgressMessageResponse);
+    return;
+  }
+
+  // Match repaired or warning notices
+  if (trimmed.includes("PDF file was repaired") || trimmed.includes("errors that were repaired")) {
+    self.postMessage({
+      type: "progress",
+      stage: "finalizing",
+      message: "Repaired non-standard PDF objects in memory...",
+      page: currentTotalPages,
+      totalPages: currentTotalPages,
+    } satisfies ProgressMessageResponse);
+    return;
+  }
+}
+
+// Intercept and silence Emscripten's console.log and console.warn inside this worker
+console.log = (...args: any[]) => {
+  const text = args.map((a) => (typeof a === "string" ? a : String(a))).join(" ");
+  parseAndForwardGhostscriptLog(text);
+};
+
+console.warn = (...args: any[]) => {
+  const text = args.map((a) => (typeof a === "string" ? a : String(a))).join(" ");
+  parseAndForwardGhostscriptLog(text);
+};
 
 async function getGhostscript(
   wasmUrl?: string,
@@ -90,22 +167,10 @@ async function getGhostscript(
         return prefix + filePath;
       },
       print: (text: string) => {
-        if (text && text.trim()) {
-          const trimmed = text.trim();
-          const pageMatch = trimmed.match(/Page\s+(\d+)/i);
-          const page = pageMatch ? parseInt(pageMatch[1], 10) : undefined;
-          self.postMessage({
-            type: "progress",
-            message: page ? `Processing Page ${page} of ${currentTotalPages}` : trimmed,
-            page,
-            totalPages: currentTotalPages,
-          } satisfies ProgressMessageResponse);
-        }
+        parseAndForwardGhostscriptLog(text);
       },
       printErr: (text: string) => {
-        if (text && text.trim()) {
-          console.warn("[ghostscript-wasm stderr]", text.trim());
-        }
+        parseAndForwardGhostscriptLog(text);
       },
     };
 
@@ -139,11 +204,16 @@ async function getGhostscript(
 }
 
 self.onmessage = async (event: MessageEvent<CompressMessageData>) => {
-  const { type, pdf, quality = "ebook", wasmUrl, wasmBinary, customArgs } =
+  const { type, pdf, quality = "ebook", wasmUrl, wasmBinary, customArgs, totalPages } =
     event.data || {};
 
   if (type === "init") {
     try {
+      self.postMessage({
+        type: "progress",
+        stage: "init",
+        message: "Loading Ghostscript WebAssembly engine...",
+      } satisfies ProgressMessageResponse);
       await getGhostscript(wasmUrl, wasmBinary);
       self.postMessage({ type: "ready" } satisfies ReadyMessageResponse);
     } catch (error) {
@@ -170,6 +240,12 @@ self.onmessage = async (event: MessageEvent<CompressMessageData>) => {
   let gs: GhostscriptModule | null = null;
 
   try {
+    self.postMessage({
+      type: "progress",
+      stage: "init",
+      message: "Initializing WebAssembly environment...",
+    } satisfies ProgressMessageResponse);
+
     // Load or get cached Ghostscript WASM module
     gs = await getGhostscript(wasmUrl, wasmBinary);
 
@@ -180,8 +256,16 @@ self.onmessage = async (event: MessageEvent<CompressMessageData>) => {
       throw new Error("Input PDF buffer is empty.");
     }
 
-    // Estimate page count for granular progress feedback
-    currentTotalPages = Math.max(1, estimatePdfPages(inputBytes));
+    // Set page count: prefer exact page count from inspector, fallback to estimation
+    lastReportedPage = 0;
+    currentTotalPages = Math.max(1, totalPages || estimatePdfPages(inputBytes));
+
+    self.postMessage({
+      type: "progress",
+      stage: "parsing",
+      message: `Writing document to memory & parsing structure (${currentTotalPages} pages)...`,
+      totalPages: currentTotalPages,
+    } satisfies ProgressMessageResponse);
 
     // Clean up any stale files from previous operations
     try {
@@ -213,8 +297,24 @@ self.onmessage = async (event: MessageEvent<CompressMessageData>) => {
             "/input.pdf",
           ];
 
+    self.postMessage({
+      type: "progress",
+      stage: "parsing",
+      message: `Starting vector optimization (${currentTotalPages} pages)...`,
+      page: 1,
+      totalPages: currentTotalPages,
+    } satisfies ProgressMessageResponse);
+
     // Execute Ghostscript CLI
     const exitCode = await gs.callMain(commandArgs);
+
+    self.postMessage({
+      type: "progress",
+      stage: "finalizing",
+      message: "Finalizing and linearizing output PDF...",
+      page: currentTotalPages,
+      totalPages: currentTotalPages,
+    } satisfies ProgressMessageResponse);
 
     // Read compressed PDF from WASM filesystem
     let output: Uint8Array;

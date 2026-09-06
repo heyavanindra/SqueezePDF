@@ -50,11 +50,13 @@ function ProgressIndicator({
     <ProgressPrimitive.Indicator
       data-slot="progress-indicator"
       className={cn(
-        "h-full rounded-full bg-gradient-to-r from-indigo-500 via-indigo-400 to-emerald-400 shadow-[0_0_12px_rgba(99,102,241,0.5)] transition-[width] duration-300 ease-out",
+        "relative h-full rounded-full bg-gradient-to-r from-indigo-500 via-indigo-400 to-emerald-400 shadow-[0_0_12px_rgba(99,102,241,0.5)] transition-[width] duration-300 ease-out overflow-hidden",
         className
       )}
       {...props}
-    />
+    >
+      <span className="absolute inset-0 bg-gradient-to-r from-transparent via-white/25 to-transparent animate-shimmer pointer-events-none" />
+    </ProgressPrimitive.Indicator>
   )
 }
 
