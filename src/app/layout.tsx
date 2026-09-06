@@ -23,6 +23,13 @@ export const viewport: Viewport = {
 export const metadata: Metadata = {
   title: "SqueezePDF — Compress PDFs Privately & Free",
   description: "Easily shrink PDF file size without losing quality. 100% private in your browser — your documents never leave your computer.",
+  icons: {
+    icon: [
+      { url: "/icon.svg", type: "image/svg+xml" },
+      { url: "/favicon.ico", sizes: "any" },
+    ],
+    apple: "/apple-icon.png",
+  },
 };
 
 export default function RootLayout({

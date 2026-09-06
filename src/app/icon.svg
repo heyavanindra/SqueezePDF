@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#18181b"/>
+      <stop offset="100%" stop-color="#09090b"/>
+    </linearGradient>
+    <linearGradient id="sheet" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="100%" stop-color="#a1a1aa"/>
+    </linearGradient>
+    <linearGradient id="emeraldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#34d399"/>
+      <stop offset="100%" stop-color="#10b981"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Background squircle -->
+  <rect x="1" y="1" width="30" height="30" rx="7" fill="url(#bg)" stroke="#27272a" stroke-width="1.2"/>
+
+  <!-- Top layer -->
+  <path d="M16 6 L25 11 L16 16 L7 11 Z" fill="none" stroke="url(#sheet)" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"/>
+  
+  <!-- Middle compression layer (Emerald) -->
+  <path d="M7 15.5 L16 20.5 L25 15.5" fill="none" stroke="url(#emeraldGrad)" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"/>
+  
+  <!-- Bottom layer -->
+  <path d="M7 20 L16 25 L25 20" fill="none" stroke="#71717a" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"/>
+
+  <!-- Emerald status accent -->
+  <circle cx="24" cy="8" r="1.5" fill="#34d399"/>
+</svg>
