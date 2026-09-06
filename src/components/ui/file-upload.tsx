@@ -99,10 +99,10 @@ export const FileUpload = ({
         </div>
         <div className="relative z-20 flex flex-col items-center justify-center">
           <p className="font-sans text-sm sm:text-base font-semibold text-white tracking-tight">
-            Upload PDF Document
+            Select or Drop your PDF
           </p>
           <p className="mt-1 font-sans text-[11px] sm:text-xs text-zinc-400 max-w-xs text-center">
-            Drag &amp; drop your PDF here, or tap to browse files
+            Drag &amp; drop your document here, or tap to choose a file
           </p>
 
           <div className="relative mx-auto mt-5 sm:mt-7 w-full max-w-lg">

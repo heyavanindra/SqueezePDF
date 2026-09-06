@@ -21,8 +21,8 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
-  title: "SqueezePDF — High-Fidelity Dual-Engine PDF Compressor",
-  description: "100% private, client-side PDF compression running directly in your browser with Ghostscript WebAssembly and Canvas JS engines.",
+  title: "SqueezePDF — Compress PDFs Privately & Free",
+  description: "Easily shrink PDF file size without losing quality. 100% private in your browser — your documents never leave your computer.",
 };
 
 export default function RootLayout({

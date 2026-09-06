@@ -99,11 +99,11 @@ function parseAndForwardGhostscriptLog(text: string) {
   // Match font loading
   if (trimmed.includes("Loading font")) {
     const fontMatch = trimmed.match(/Loading font\s+([^\s(]+)/i);
-    const fontName = fontMatch ? fontMatch[1] : "vector font";
+    const fontName = fontMatch ? fontMatch[1] : "fonts";
     self.postMessage({
       type: "progress",
       stage: "page",
-      message: `Subsetting ${fontName} for page ${lastReportedPage || 1}...`,
+      message: `Refining ${fontName} for page ${lastReportedPage || 1}...`,
       page: lastReportedPage || 1,
       totalPages: currentTotalPages,
     } satisfies ProgressMessageResponse);
@@ -115,7 +115,7 @@ function parseAndForwardGhostscriptLog(text: string) {
     self.postMessage({
       type: "progress",
       stage: "parsing",
-      message: `Processing pages 1 through ${currentTotalPages}...`,
+      message: `Optimizing pages 1 through ${currentTotalPages}...`,
       page: 1,
       totalPages: currentTotalPages,
     } satisfies ProgressMessageResponse);
@@ -127,7 +127,7 @@ function parseAndForwardGhostscriptLog(text: string) {
     self.postMessage({
       type: "progress",
       stage: "finalizing",
-      message: "Repaired non-standard PDF objects in memory...",
+      message: "Cleaning up document structure...",
       page: currentTotalPages,
       totalPages: currentTotalPages,
     } satisfies ProgressMessageResponse);
@@ -212,7 +212,7 @@ self.onmessage = async (event: MessageEvent<CompressMessageData>) => {
       self.postMessage({
         type: "progress",
         stage: "init",
-        message: "Loading Ghostscript WebAssembly engine...",
+        message: "Preparing compression engine...",
       } satisfies ProgressMessageResponse);
       await getGhostscript(wasmUrl, wasmBinary);
       self.postMessage({ type: "ready" } satisfies ReadyMessageResponse);
@@ -243,7 +243,7 @@ self.onmessage = async (event: MessageEvent<CompressMessageData>) => {
     self.postMessage({
       type: "progress",
       stage: "init",
-      message: "Initializing WebAssembly environment...",
+      message: "Preparing your document...",
     } satisfies ProgressMessageResponse);
 
     // Load or get cached Ghostscript WASM module
@@ -263,7 +263,7 @@ self.onmessage = async (event: MessageEvent<CompressMessageData>) => {
     self.postMessage({
       type: "progress",
       stage: "parsing",
-      message: `Writing document to memory & parsing structure (${currentTotalPages} pages)...`,
+      message: `Reading document (${currentTotalPages} pages)...`,
       totalPages: currentTotalPages,
     } satisfies ProgressMessageResponse);
 
@@ -300,7 +300,7 @@ self.onmessage = async (event: MessageEvent<CompressMessageData>) => {
     self.postMessage({
       type: "progress",
       stage: "parsing",
-      message: `Starting vector optimization (${currentTotalPages} pages)...`,
+      message: `Compressing document (${currentTotalPages} pages)...`,
       page: 1,
       totalPages: currentTotalPages,
     } satisfies ProgressMessageResponse);
@@ -311,7 +311,7 @@ self.onmessage = async (event: MessageEvent<CompressMessageData>) => {
     self.postMessage({
       type: "progress",
       stage: "finalizing",
-      message: "Finalizing and linearizing output PDF...",
+      message: "Finalizing your compressed PDF...",
       page: currentTotalPages,
       totalPages: currentTotalPages,
     } satisfies ProgressMessageResponse);
