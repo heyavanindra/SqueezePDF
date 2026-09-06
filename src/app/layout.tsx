@@ -21,8 +21,8 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
-  title: "Optima — High-Fidelity PDF Compressor",
-  description: "Engineered for precision and speed. Compress PDFs with granular control and instant preview.",
+  title: "SqueezePDF — High-Fidelity Dual-Engine PDF Compressor",
+  description: "100% private, client-side PDF compression running directly in your browser with Ghostscript WebAssembly and Canvas JS engines.",
 };
 
 export default function RootLayout({

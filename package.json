@@ -1,5 +1,5 @@
 {
-  "name": "pdf-compressor",
+  "name": "squeezepdf",
   "version": "0.1.0",
   "private": true,
   "scripts": {

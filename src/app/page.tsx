@@ -526,7 +526,7 @@ export default function Home() {
             <Layers className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-white" />
           </div>
           <div className="flex items-center gap-1.5 sm:gap-2">
-            <span className="font-semibold tracking-tight text-white text-sm sm:text-base">OPTIMA</span>
+            <span className="font-semibold tracking-tight text-white text-sm sm:text-base">SqueezePDF</span>
             <span className="rounded-md border border-white/10 bg-white/[0.04] px-1.5 py-0.5 text-[9px] sm:text-[10px] font-mono text-zinc-400">
               v2.0
             </span>
