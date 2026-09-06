@@ -44,10 +44,12 @@ export async function inspectPdf(
   const isLargeFile = fileSizeBytes > 15 * 1024 * 1024;
   const isIOSLargeFile = isIOS && isLargeFile;
 
+  let loadingTask: pdfjsLib.PDFDocumentLoadingTask | null = null;
+
   try {
-    // Clone buffer because PDF.js may transfer it
-    const bufferCopy = fileBuffer.slice(0);
-    const loadingTask = pdfjsLib.getDocument({ data: bufferCopy });
+    // Pass Uint8Array view without redundant full buffer slice
+    const uint8View = new Uint8Array(fileBuffer);
+    loadingTask = pdfjsLib.getDocument({ data: uint8View });
     const pdf = await loadingTask.promise;
     const pageCount = pdf.numPages;
 
@@ -61,6 +63,8 @@ export async function inspectPdf(
         return acc + ("str" in item && typeof item.str === "string" ? item.str.length : 0);
       }, 0);
       totalChars += pageChars;
+      // Clean up page resources immediately to prevent memory leaks on iOS
+      page.cleanup();
     }
 
     const hasSelectableText = totalChars >= 50;
@@ -93,5 +97,13 @@ export async function inspectPdf(
       isScanned: false,
       isIOSLargeFile,
     };
+  } finally {
+    if (loadingTask) {
+      try {
+        await loadingTask.destroy();
+      } catch {
+        // Safe ignore
+      }
+    }
   }
 }
