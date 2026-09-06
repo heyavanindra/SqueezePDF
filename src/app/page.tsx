@@ -554,7 +554,7 @@ export default function Home() {
     <div className="relative min-h-screen w-full bg-[#09090b] text-[#f4f4f5] overflow-x-hidden font-sans">
       {/* Ambient background light beam & subtle grid */}
       <div className="pointer-events-none absolute inset-x-0 -top-40 flex justify-center overflow-hidden">
-        <div className="h-[280px] sm:h-[480px] w-[500px] sm:w-[900px] bg-[radial-gradient(ellipse_60%_50%_at_50%_0%,rgba(120,119,198,0.18),rgba(255,255,255,0))]" />
+        <div className="h-[280px] sm:h-[480px] w-[500px] sm:w-[900px] bg-[radial-gradient(ellipse_60%_50%_at_50%_0%,rgba(16,185,129,0.08),rgba(255,255,255,0.03),transparent)]" />
       </div>
       <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(to_right,#ffffff05_1px,transparent_1px),linear-gradient(to_bottom,#ffffff05_1px,transparent_1px)] bg-[size:32px_32px] sm:bg-[size:40px_40px] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_15%,#000_70%,transparent_100%)]" />
 
@@ -670,7 +670,7 @@ export default function Home() {
                 <div className="flex flex-col py-1">
                   <span className="text-[9px] sm:text-[10px] font-mono uppercase text-zinc-500">Saved</span>
                   <span className={`mt-0.5 font-mono text-xs sm:text-sm font-semibold ${
-                    result.compressedSize <= result.originalSize ? "text-indigo-300" : "text-amber-300"
+                    result.compressedSize <= result.originalSize ? "text-emerald-400" : "text-amber-300"
                   }`}>
                     {result.compressedSize <= result.originalSize ? `-${result.ratio}%` : "0%"}
                   </span>
@@ -679,7 +679,7 @@ export default function Home() {
 
               {/* Explanatory Advisory if Canvas rasterizer increased a vector text document */}
               {result.compressedSize > result.originalSize && result.engine === "canvas" && (
-                <div className="mt-3.5 flex items-start gap-2 rounded-lg border border-amber-500/25 bg-amber-500/[0.08] p-3 text-left text-xs text-amber-200 w-full">
+                <div className="mt-3.5 flex items-start gap-2 rounded-lg border border-amber-500/20 bg-amber-500/[0.06] p-3 text-left text-xs text-amber-200 w-full">
                   <AlertTriangle className="h-4 w-4 shrink-0 text-amber-400 mt-0.5" />
                   <div className="flex-1 leading-relaxed text-[11px] sm:text-xs">
                     <span className="font-semibold text-amber-300">Why didn't the file get smaller?</span> This document contains clean digital text. Converting pages into images increased the size.
@@ -722,14 +722,14 @@ export default function Home() {
               </div>
             </div>
           ) : status === "compressing" ? (
-            /* Transparent Processing State with Page Telemetry */
+            /* Transparent Processing State with Refined Industrial Precision */
             <div className="animate-pop-in flex flex-col items-center justify-center rounded-xl border border-white/[0.08] bg-black/40 py-6 sm:py-8 px-4 sm:px-6 w-full text-center">
               <div className="relative flex h-11 w-11 sm:h-12 sm:w-12 items-center justify-center">
-                <div className="absolute inset-0 rounded-full border-2 border-indigo-500/20 border-t-indigo-400 animate-fast-spin" />
-                <Zap className="h-5 w-5 text-indigo-400 animate-pulse" />
+                <div className="absolute inset-0 rounded-full border-2 border-white/10 border-t-emerald-400 animate-fast-spin" />
+                <div className="h-2 w-2 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.8)] animate-pulse" />
               </div>
 
-              <h3 className="mt-3 text-base sm:text-lg font-medium text-white">
+              <h3 className="mt-3.5 text-base sm:text-lg font-medium text-white">
                 Compressing...
               </h3>
 
@@ -743,16 +743,16 @@ export default function Home() {
                 </p>
               )}
 
-              {/* Progress Bar with Active Shimmer */}
+              {/* Progress Bar with Precision Shimmer */}
               <div className="mt-3.5 w-full max-w-sm">
                 <Progress value={progress} />
               </div>
 
               {/* Percentage & Elapsed */}
-              <div className="mt-2 flex items-center justify-between w-full max-w-sm text-[11px] font-mono text-zinc-400 px-0.5">
+              <div className="mt-2.5 flex items-center justify-between w-full max-w-sm text-[11px] font-mono text-zinc-400 px-0.5">
                 <span className="text-emerald-400 font-semibold tabular-nums">{Math.round(progress)}%</span>
                 <div className="flex items-center gap-2 text-zinc-500">
-                  {etaSec !== null && <span className="text-indigo-400">~{etaSec}s left</span>}
+                  {etaSec !== null && <span className="text-zinc-400">~{etaSec}s left</span>}
                   <span>{elapsedSec.toFixed(1)}s</span>
                 </div>
               </div>
@@ -798,7 +798,7 @@ export default function Home() {
                 <div className="mt-4 flex flex-col text-left animate-pop-in">
                   {/* Smart Inspection Banner */}
                   {isInspecting ? (
-                    <div className="flex items-center gap-2 rounded-xl border border-white/[0.06] bg-white/[0.02] p-2.5 text-xs text-indigo-400 font-mono">
+                    <div className="flex items-center gap-2 rounded-xl border border-white/[0.06] bg-white/[0.02] p-2.5 text-xs text-zinc-300 font-mono">
                       <RefreshCw className="h-3.5 w-3.5 animate-spin" />
                       <span>Detecting document structure...</span>
                     </div>
@@ -814,7 +814,7 @@ export default function Home() {
                           </>
                         ) : (
                           <>
-                            <FileCheck className="h-3.5 w-3.5 text-indigo-400 shrink-0" />
+                            <FileCheck className="h-3.5 w-3.5 text-emerald-400/80 shrink-0" />
                             <span>
                               Detected document with text ({inspection.pageCount} {inspection.pageCount === 1 ? "page" : "pages"}) • Optimized for razor-sharp text
                             </span>
@@ -856,8 +856,8 @@ export default function Home() {
                             }}
                             className={`group relative flex flex-col items-start rounded-xl p-2.5 sm:p-3 text-left pressable cursor-pointer min-h-[56px] select-none touch-manipulation justify-between ${
                               isSelected
-                                ? "bg-white/[0.09] border border-white/25 shadow-[0_0_20px_rgba(255,255,255,0.06)]"
-                                : "bg-white/[0.02] border border-white/[0.05] hover:bg-white/[0.04] hover:border-white/12"
+                                ? "bg-white/[0.08] border border-white/20 shadow-[inset_0_1px_0_rgba(255,255,255,0.12),0_2px_8px_rgba(0,0,0,0.3)]"
+                                : "bg-white/[0.02] border border-white/[0.05] hover:bg-white/[0.04] hover:border-white/10"
                             }`}
                           >
                             <div className="flex w-full items-center justify-between">
@@ -869,7 +869,7 @@ export default function Home() {
                                 {tier.name}
                               </span>
                               {isSelected && (
-                                <div className="h-1.5 w-1.5 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.9)] animate-pulse" />
+                                <div className="h-1.5 w-1.5 rounded-full bg-emerald-400 shadow-[0_0_6px_rgba(52,211,153,0.7)]" />
                               )}
                             </div>
                             <span className="mt-1 text-[10px] font-mono text-zinc-500 truncate w-full">
@@ -996,7 +996,7 @@ export default function Home() {
 
           <div className="group rounded-xl border border-white/[0.06] bg-white/[0.02] p-4 sm:p-5 transition-all duration-200 hover:border-white/15 hover:bg-white/[0.035]">
             <div className="flex h-8 w-8 items-center justify-center rounded-lg border border-white/10 bg-white/[0.04] text-zinc-300">
-              <Sparkles className="h-4 w-4 text-indigo-400" />
+              <Sparkles className="h-4 w-4 text-zinc-300" />
             </div>
             <h4 className="mt-3 text-xs sm:text-sm font-medium text-white">Smart compression</h4>
             <p className="mt-1.5 text-[11px] sm:text-xs text-zinc-400 leading-relaxed">
@@ -1027,7 +1027,7 @@ export default function Home() {
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <div className="rounded-xl border border-white/[0.06] bg-white/[0.015] p-3.5 sm:p-4">
               <div className="flex items-center gap-2 text-xs font-medium text-white">
-                <span className="h-1.5 w-1.5 rounded-full bg-indigo-400" />
+                <span className="h-1.5 w-1.5 rounded-full bg-zinc-400" />
                 Ghostscript WASM
               </div>
               <p className="mt-1.5 text-[11px] sm:text-xs text-zinc-400 leading-relaxed">

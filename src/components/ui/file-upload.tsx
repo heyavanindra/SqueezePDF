@@ -88,10 +88,10 @@ export const FileUpload = ({
         }}
         whileHover="animate"
         className={cn(
-          "group/file relative block w-full cursor-pointer overflow-hidden rounded-2xl border-2 border-dashed p-6 sm:p-9 transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500/50 focus-visible:border-indigo-400",
+          "group/file relative block w-full cursor-pointer overflow-hidden rounded-2xl border-2 border-dashed p-6 sm:p-9 transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/30 focus-visible:border-emerald-500/50",
           isDragActive
-            ? "border-indigo-400 bg-indigo-500/[0.08] shadow-[0_0_32px_rgba(99,102,241,0.25)]"
-            : "border-white/12 bg-white/[0.015] hover:border-white/25 hover:bg-white/[0.03]"
+            ? "border-emerald-500/60 bg-emerald-500/[0.03] shadow-[0_0_32px_rgba(16,185,129,0.1)]"
+            : "border-white/10 bg-white/[0.015] hover:border-white/20 hover:bg-white/[0.025]"
         )}
       >
         <input
@@ -145,13 +145,13 @@ export const FileUpload = ({
                   transition={{ duration: 0.2, ease: [0.23, 1, 0.32, 1] }}
                   onClick={(e) => e.stopPropagation()}
                   className={cn(
-                    "relative z-40 mx-auto flex w-full flex-col items-start justify-start overflow-hidden rounded-xl border border-white/15 bg-[#18181b]/95 p-3.5 sm:p-4 shadow-xl backdrop-blur-xl"
+                    "relative z-40 mx-auto flex w-full flex-col items-start justify-start overflow-hidden rounded-xl border border-white/12 bg-[#161618]/95 p-3.5 sm:p-4 shadow-xl backdrop-blur-xl"
                   )}
                 >
                   <div className="flex w-full items-center justify-between gap-2 sm:gap-3">
                     <div className="flex items-center gap-2.5 min-w-0 flex-1">
-                      <div className="flex h-8 w-8 sm:h-9 sm:w-9 shrink-0 items-center justify-center rounded-lg border border-indigo-500/20 bg-indigo-500/10 text-indigo-400">
-                        <IconFileText className="h-4 w-4 sm:h-5 sm:w-5" />
+                      <div className="flex h-8 w-8 sm:h-9 sm:w-9 shrink-0 items-center justify-center rounded-lg border border-white/10 bg-white/[0.04] text-zinc-300">
+                        <IconFileText className="h-4 w-4 sm:h-5 sm:w-5 text-emerald-400" />
                       </div>
                       <div className="min-w-0 flex-1 text-left">
                         <p className="truncate text-xs sm:text-sm font-medium text-white max-w-[130px] sm:max-w-xs">
@@ -192,17 +192,17 @@ export const FileUpload = ({
                   damping: 20,
                 }}
                 className={cn(
-                  "relative z-40 mx-auto flex h-20 w-24 sm:h-28 sm:max-w-[7.5rem] items-center justify-center rounded-2xl border border-white/15 bg-white/[0.04] shadow-[0_12px_36px_rgba(0,0,0,0.4)] backdrop-blur-md transition-shadow group-hover/file:shadow-[0_0_24px_rgba(255,255,255,0.1)]"
+                  "relative z-40 mx-auto flex h-20 w-24 sm:h-28 sm:max-w-[7.5rem] items-center justify-center rounded-2xl border border-white/12 bg-white/[0.03] shadow-[0_12px_36px_rgba(0,0,0,0.4)] backdrop-blur-md transition-shadow group-hover/file:shadow-[0_0_24px_rgba(255,255,255,0.08)]"
                 )}
               >
                 {isDragActive ? (
                   <motion.div
                     initial={{ opacity: 0, scale: 0.9 }}
                     animate={{ opacity: 1, scale: 1 }}
-                    className="flex flex-col items-center gap-1 text-indigo-400 text-xs font-medium"
+                    className="flex flex-col items-center gap-1 text-emerald-400 text-xs font-medium"
                   >
                     <span className="text-[11px]">Drop PDF</span>
-                    <IconUpload className="h-4 w-4 text-indigo-400" />
+                    <IconUpload className="h-4 w-4 text-emerald-400" />
                   </motion.div>
                 ) : (
                   <IconUpload className="h-5 w-5 sm:h-6 sm:w-6 text-zinc-300 transition-transform duration-200 group-hover/file:scale-110 group-hover/file:text-white" />
@@ -213,7 +213,7 @@ export const FileUpload = ({
             {!files.length && (
               <motion.div
                 variants={secondaryVariant}
-                className="absolute inset-0 z-30 mx-auto flex h-20 w-24 sm:h-28 sm:max-w-[7.5rem] items-center justify-center rounded-2xl border border-dashed border-indigo-400/60 bg-indigo-500/[0.04] opacity-0"
+                className="absolute inset-0 z-30 mx-auto flex h-20 w-24 sm:h-28 sm:max-w-[7.5rem] items-center justify-center rounded-2xl border border-dashed border-white/15 bg-white/[0.02] opacity-0"
               />
             )}
           </div>

@@ -33,7 +33,7 @@ function ProgressTrack({ className, ...props }: ProgressPrimitive.Track.Props) {
   return (
     <ProgressPrimitive.Track
       className={cn(
-        "relative flex h-2 w-full items-center overflow-hidden rounded-full bg-white/[0.08] border border-white/[0.06] backdrop-blur-sm",
+        "relative flex h-1.5 w-full items-center overflow-hidden rounded-full bg-white/[0.06] border border-white/[0.06] shadow-[inset_0_1px_2px_rgba(0,0,0,0.5)]",
         className
       )}
       data-slot="progress-track"
@@ -50,12 +50,12 @@ function ProgressIndicator({
     <ProgressPrimitive.Indicator
       data-slot="progress-indicator"
       className={cn(
-        "relative h-full rounded-full bg-gradient-to-r from-indigo-500 via-indigo-400 to-emerald-400 shadow-[0_0_12px_rgba(99,102,241,0.5)] transition-[width] duration-300 ease-out overflow-hidden",
+        "relative h-full rounded-full bg-gradient-to-r from-emerald-500 via-emerald-400 to-emerald-300 shadow-[0_0_10px_rgba(52,211,153,0.3)] transition-[width] duration-300 ease-[cubic-bezier(0.23,1,0.32,1)] overflow-hidden",
         className
       )}
       {...props}
     >
-      <span className="absolute inset-0 bg-gradient-to-r from-transparent via-white/25 to-transparent animate-shimmer pointer-events-none" />
+      <span className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-shimmer pointer-events-none" />
     </ProgressPrimitive.Indicator>
   )
 }
